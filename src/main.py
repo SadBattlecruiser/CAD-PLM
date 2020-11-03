@@ -1,28 +1,36 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+
 import sys
 from PyQt5.QtWidgets import (QWidget, QToolTip, QPushButton, QApplication)
-#from PyQt5.QtGui import QFont, QPainter
 from PyQt5.QtGui import *
-from PyQt5.QtCore import Qt, QCoreApplication
-
+#from PyQt5.QtCore import Qt, QCoreApplication
+from PyQt5.QtCore import *
+from flagsclass import *
 #import numpy as np
+
 
 class MyApp(QWidget):
     def __init__(self):
-        self.points = []
+        self.flags = FlagsClass()       # Хранилище флагов состояний
+        self.points = []                # Лист точек
+        self.lines = []                 # Лист линий
         super().__init__()
         self.initUI()
 
     def initUI(self):
-        qbtn = QPushButton('WOW', self)
-        #qbtn.clicked.connect(QCoreApplication.instance().quit)
-        # Принтим надпись в консольку
-        qbtn.clicked.connect(lambda: self.printButton('test'))
-        qbtn.resize(qbtn.sizeHint())
-        qbtn.move(50, 50)
+        wow_btn = QPushButton('WOW', self)
+        wow_btn.clicked.connect(lambda: self.printButton('test'))
+        wow_btn.resize(wow_btn.sizeHint())
+        wow_btn.move(50, 50)
+        #
+        line_btn = QPushButton('Line', self)
+        line_btn.clicked.connect(lambda: self.lineButton())
+        line_btn.resize(line_btn.sizeHint())
+        line_btn.move(0, 0)
+        #
         self.setGeometry(300, 300, 500, 500)
-        self.setWindowTitle('Button Test')
+        self.setWindowTitle('lab1 CAD')
         self.show()
 
     ### Ивенты
@@ -34,27 +42,55 @@ class MyApp(QWidget):
     def mousePressEvent(self, event):
         print(event)
         print('X:', event.x(), 'Y:', event.y())
-        #self.drawPoint(event.pos())
-        self.points.append(event.pos())
+        # Если сейчас рисуем линию
+        if self.flags.in_line_draw:
+            if self.flags.line_first_point:
+                self.first_point = event.pos()
+                self.flags.line_first_point = False
+            else:
+                self.second_point = event.pos()
+                self.lines.append(QLineF(self.first_point, self.second_point))
+                self.flags.line_first_point = True
+        # Иначе просто ставим точку
+        else:
+            self.points.append(event.pos())
         self.update()
 
-    def paintEvent(self, paint_event):
+    # Отвечает за отрисовку всего
+    def paintEvent(self, event):
         painter = QPainter(self)
         #painter.drawPixmap(self.rect(), self._image)
-        pen = QPen()
-        pen.setWidth(4)
-        painter.setPen(pen)
         painter.setRenderHint(QPainter.Antialiasing, True)
-        painter.drawPoint(300, 300)
-        #painter.drawLine(100, 100, 400, 400)
-        for pos in self.points:
-            painter.drawPoint(pos)
+        pen = QPen()
+        # Отрисовка обычных точек
+        if self.flags.draw_points:
+            pen.setWidth(6)
+            painter.setPen(pen)
+            for point_i in self.points:
+                painter.drawPoint(point_i)
+        # Отрисовка обычных линий
+        if self.flags.draw_lines:
+            pen.setWidth(3)
+            painter.setPen(pen)
+            for line_i in self.lines:
+                painter.drawLine(line_i)
+        # Отрисовка первой точки линии, если она уже задана
+        if self.flags.in_line_draw and not self.flags.line_first_point:
+            pen.setWidth(6)
+            pen.setColor(QColor(255,0,0))
+            painter.setPen(pen)
+            painter.drawPoint(self.first_point)
+            pen.setColor(QColor(0,0,0))
+            painter.setPen(pen)
     ###
+
 
     ### Обработчики
     def printButton(self, name):
         print(name)
 
+    def lineButton(self):
+        self.flags.change_in_line_draw()
     #def drawPoint(self, pos, color=Qt.black):
     #    painter = QPainter(self)
     #    pen = QPen(color, 3)
