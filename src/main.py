@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import numpy as np
+
 from PyQt5.QtWidgets import (QWidget, QToolTip, QPushButton, QApplication)
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+
 from flagsclass import *
 
-import numpy as np
 
 
 class MyApp(QWidget):
@@ -42,10 +44,6 @@ class MyApp(QWidget):
         self.show()
 
     ### Ивенты
-    # Этого достаточно, чтобы ловить кнопку
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape:
-            print('esc')
     # Нажатие мыши
     def mousePressEvent(self, event):
         print(event)
@@ -54,22 +52,26 @@ class MyApp(QWidget):
         # Если сейчас рисуем линию
         if f.in_line_draw:
             if f.line_first_point:
-                self.first_point = event.pos()
+                self.first_point = np.array([event.x(), event.y()])
                 f.line_first_point = False
             else:
-                self.second_point = event.pos()
-                self.lines.append(QLineF(self.first_point, self.second_point))
+                self.second_point = np.array([event.x(), event.y()])
+                self.lines.append(QLineF(self.first_point[0], self.first_point[1], self.second_point[0], self.second_point[1]))
                 f.line_first_point = True
         # Если сейчас выбираем точку
         elif f.in_select_point:
-            #self.selected_points.append(self.findClosePoint(event.pos()))
-            print(self.selected_points)
-            self.selected_points = np.vstack([self.selected_points, [event.x(), event.y()]])
+            cls_idx = self.findClosePoint(event.x(), event.y())
+            self.selected_points = np.vstack([self.selected_points, self.points[cls_idx]])
         # Иначе просто ставим точку
         else:
             #self.points.append(event.pos())
             self.points = np.vstack([self.points, [event.x(), event.y()]])
         self.update()
+
+    # Этого достаточно, чтобы ловить кнопку
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            print('esc')
 
     # Отвечает за отрисовку всего
     def paintEvent(self, event):
@@ -91,7 +93,7 @@ class MyApp(QWidget):
                 painter.drawLine(line_i)
         # Отрисовка выбранных точек и линий
         pen.setWidth(6)
-        pen.setColor(QColor(100,150,50))
+        pen.setColor(QColor(50,50,255))
         painter.setPen(pen)
         for point_i in self.selected_points:
             painter.drawPoint(point_i[0], point_i[1])
@@ -106,7 +108,7 @@ class MyApp(QWidget):
             pen.setWidth(6)
             pen.setColor(QColor(255,0,0))
             painter.setPen(pen)
-            painter.drawPoint(self.first_point)
+            painter.drawPoint(self.first_point[0], self.first_point[1])
             pen.setColor(QColor(0,0,0))
             painter.setPen(pen)
     ###
@@ -114,7 +116,7 @@ class MyApp(QWidget):
 
     ### Обработчики
     def lineButton(self):
-        self.selected_points = np.empty([0, 2]) 
+        self.selected_points = np.empty([0, 2])
         self.selected_lines = []
         self.flags.change_in_line_draw()
         self.update()
@@ -130,8 +132,13 @@ class MyApp(QWidget):
         self.update()
 
 
-    def findClosePoint(self):
-        pass
+    ### Вспомогательное
+    def findClosePoint(self, x, y):
+        if (self.points.size == 0):
+            print('ERROR: self.points.size == 0 in findClosePoints')
+            return -1
+        dist = np.sqrt(np.power(self.points[:,0] - x, 2) + np.power(self.points[:,1] - y, 2))
+        return np.argmin(dist)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
