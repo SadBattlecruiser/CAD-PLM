@@ -14,11 +14,11 @@ from flagsclass import *
 
 class MyApp(QWidget):
     def __init__(self):
-        self.flags = FlagsClass()                       # Хранилище флагов состояний
-        self.points = np.empty([0, 2])                  # Лист обычных точек
-        self.lines = []                                 # Лист обычных линий
-        self.selected_points = np.empty([0, 2])         # Лист выбранных точек
-        self.selected_lines = []                        # Лист выбранных линий
+        self.flags = FlagsClass()                                  # Хранилище флагов состояний
+        self.points = np.empty([0, 2], dtype=int)                  # Каждая точка - x,y
+        self.lines = np.empty([0, 2], dtype=int)                   # Каждая линия - p1_idx, p2_idx
+        self.selected_points = np.empty([0, 2], dtype=int)         # Лист выбранных точек
+        self.selected_lines = np.empty([0, 2], dtype=int)          # Лист выбранных линий
         super().__init__()
         self.initUI()
         print('MyApp constructor')
@@ -56,7 +56,13 @@ class MyApp(QWidget):
                 f.line_first_point = False
             else:
                 self.second_point = np.array([event.x(), event.y()])
-                self.lines.append(QLineF(self.first_point[0], self.first_point[1], self.second_point[0], self.second_point[1]))
+                #self.lines.append(QLineF(self.first_point[0], self.first_point[1], self.second_point[0], self.second_point[1]))
+                fp_idx = self.points.shape[0]
+                sp_idx = fp_idx + 1
+                # Добавляем обе точки линии ко всем точкам
+                self.points = np.vstack([self.points, np.vstack([self.first_point, self.second_point])])
+                # Добавляем линию как индексы двух точек
+                self.lines = np.vstack([self.lines, [fp_idx, sp_idx]])
                 f.line_first_point = True
         # Если сейчас выбираем точку
         elif f.in_select_point:
@@ -90,7 +96,9 @@ class MyApp(QWidget):
             pen.setWidth(3)
             painter.setPen(pen)
             for line_i in self.lines:
-                painter.drawLine(line_i)
+                fp_idx, sp_idx = line_i
+                painter.drawLine(self.points[fp_idx,0], self.points[fp_idx,1],
+                                 self.points[sp_idx,0], self.points[sp_idx,1])
         # Отрисовка выбранных точек и линий
         pen.setWidth(6)
         pen.setColor(QColor(50,50,255))
@@ -99,9 +107,9 @@ class MyApp(QWidget):
             painter.drawPoint(point_i[0], point_i[1])
         pen.setWidth(3)
         painter.setPen(pen)
-        for line_i in self.selected_lines:
-            painter.drawLine(line_i)
-        pen.setColor(QColor(0,0,0))
+        #for line_i in self.selected_lines:
+        #    painter.drawLine(line_i)
+        #pen.setColor(QColor(0,0,0))
         painter.setPen(pen)
         # Отрисовка первой точки линии, если она уже задана
         if self.flags.in_line_draw and not self.flags.line_first_point:
@@ -116,14 +124,14 @@ class MyApp(QWidget):
 
     ### Обработчики
     def lineButton(self):
-        self.selected_points = np.empty([0, 2])
-        self.selected_lines = []
+        self.selected_points = np.empty([0, 2], dtype=int)
+        self.selected_lines = np.empty([0, 2], dtype=int)
         self.flags.change_in_line_draw()
         self.update()
 
     def pointPosButton(self):
-        self.selected_points = np.empty([0, 2])
-        self.selected_lines = []
+        self.selected_points = np.empty([0, 2], dtype=int)
+        self.selected_lines = np.empty([0, 2], dtype=int)
         self.flags.change_in_point_pos()
         self.update()
 
@@ -133,12 +141,22 @@ class MyApp(QWidget):
 
 
     ### Вспомогательное
+    # Ближайшая точка
     def findClosePoint(self, x, y):
         if (self.points.size == 0):
             print('ERROR: self.points.size == 0 in findClosePoints')
             return -1
         dist = np.sqrt(np.power(self.points[:,0] - x, 2) + np.power(self.points[:,1] - y, 2))
         return np.argmin(dist)
+
+    # Ближайший отрезок
+    def findCloseLine(self, x, y):
+        if (self.lines.size == 0):
+            print('ERROR: self.lines.size == 0 in findCloseLine')
+            return -1
+        # Находим координаты ближайшей точки каждоый ЛИНИИ
+        # (т.е. будто они бесконечные)
+        pass
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
