@@ -16,6 +16,8 @@ class FlagsClass():
         self.line_first_point = False       # Если рисуем, первая ли это точка?
         self.in_point_pos = False           # Задаем ли ограничения на положения точки?
         self.in_select_point = False        # Выбираем ли сейчас точку?
+        self.in_line_pos = False            # Задаем ли ограничения на положения точки?
+        self.in_select_line = False         # Выбираем ли сейчас линию?
 
     def change_draw_points(self):
         if self.draw_points:
@@ -46,3 +48,11 @@ class FlagsClass():
             self.in_point_pos = True
             self.in_select_point = True
         print('in_point_pos ', self.in_point_pos)
+
+    def change_in_line_pos(self):
+        temp = self.in_line_pos
+        self.reset_state()
+        if not temp:
+            self.in_line_pos = True
+            self.in_select_line = True
+        print('in_line_pos ', self.in_line_pos)

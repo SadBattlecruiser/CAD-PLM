@@ -15,9 +15,9 @@ from flagsclass import *
 class MyApp(QWidget):
     def __init__(self):
         self.flags = FlagsClass()                                  # Хранилище флагов состояний
-        self.points = np.empty([0, 2], dtype=int)                  # Каждая точка - x,y
+        self.points = np.empty([0, 2])                             # Каждая точка - x,y
         self.lines = np.empty([0, 2], dtype=int)                   # Каждая линия - p1_idx, p2_idx
-        self.selected_points = np.empty([0, 2], dtype=int)         # Лист выбранных точек
+        self.selected_points = np.empty([0, 2])                    # Лист выбранных точек
         self.selected_lines = np.empty([0, 2], dtype=int)          # Лист выбранных линий
         super().__init__()
         self.initUI()
@@ -34,10 +34,15 @@ class MyApp(QWidget):
         point_pos_btn.resize(point_pos_btn.sizeHint())
         point_pos_btn.move(0, 30)
         #
+        line_pos_btn = QPushButton('Line pos', self)
+        line_pos_btn.clicked.connect(lambda: self.linePosButton())
+        line_pos_btn.resize(line_pos_btn.sizeHint())
+        line_pos_btn.move(0, 60)
+        #
         point_pos_btn = QPushButton('test', self)
         point_pos_btn.clicked.connect(lambda: self.testButton())
         point_pos_btn.resize(point_pos_btn.sizeHint())
-        point_pos_btn.move(0, 60)
+        point_pos_btn.move(0, 120)
         #
         self.setGeometry(300, 300, 500, 500)
         self.setWindowTitle('lab1 CAD')
@@ -56,7 +61,6 @@ class MyApp(QWidget):
                 f.line_first_point = False
             else:
                 self.second_point = np.array([event.x(), event.y()])
-                #self.lines.append(QLineF(self.first_point[0], self.first_point[1], self.second_point[0], self.second_point[1]))
                 fp_idx = self.points.shape[0]
                 sp_idx = fp_idx + 1
                 # Добавляем обе точки линии ко всем точкам
@@ -68,9 +72,12 @@ class MyApp(QWidget):
         elif f.in_select_point:
             cls_idx = self.findClosePoint(event.x(), event.y())
             self.selected_points = np.vstack([self.selected_points, self.points[cls_idx]])
+        # Если сейчас выбираем отрезок
+        elif f.in_select_line:
+            cls_idx = self.findCloseLine(event.x(), event.y())
+            self.selected_lines = np.vstack([self.selected_lines, self.lines[cls_idx]])
         # Иначе просто ставим точку
         else:
-            #self.points.append(event.pos())
             self.points = np.vstack([self.points, [event.x(), event.y()]])
         self.update()
 
@@ -107,9 +114,11 @@ class MyApp(QWidget):
             painter.drawPoint(point_i[0], point_i[1])
         pen.setWidth(3)
         painter.setPen(pen)
-        #for line_i in self.selected_lines:
-        #    painter.drawLine(line_i)
-        #pen.setColor(QColor(0,0,0))
+        for line_i in self.selected_lines:
+            fp_idx, sp_idx = line_i
+            painter.drawLine(self.points[fp_idx,0], self.points[fp_idx,1],
+                             self.points[sp_idx,0], self.points[sp_idx,1])
+        pen.setColor(QColor(0,0,0))
         painter.setPen(pen)
         # Отрисовка первой точки линии, если она уже задана
         if self.flags.in_line_draw and not self.flags.line_first_point:
@@ -124,15 +133,21 @@ class MyApp(QWidget):
 
     ### Обработчики
     def lineButton(self):
-        self.selected_points = np.empty([0, 2], dtype=int)
+        self.selected_points = np.empty([0, 2])
         self.selected_lines = np.empty([0, 2], dtype=int)
         self.flags.change_in_line_draw()
         self.update()
 
     def pointPosButton(self):
-        self.selected_points = np.empty([0, 2], dtype=int)
+        self.selected_points = np.empty([0, 2])
         self.selected_lines = np.empty([0, 2], dtype=int)
         self.flags.change_in_point_pos()
+        self.update()
+
+    def linePosButton(self):
+        self.selected_points = np.empty([0, 2])
+        self.selected_lines = np.empty([0, 2], dtype=int)
+        self.flags.change_in_line_pos()
         self.update()
 
     def testButton(self):
@@ -154,9 +169,41 @@ class MyApp(QWidget):
         if (self.lines.size == 0):
             print('ERROR: self.lines.size == 0 in findCloseLine')
             return -1
-        # Находим координаты ближайшей точки каждоый ЛИНИИ
-        # (т.е. будто они бесконечные)
-        pass
+        tolerance = 20
+        # Оставляем только те линии, в "рамку" которых попал курсор
+        interes_idxs = []
+        interes_fp_x = []
+        interes_fp_y = []
+        interes_sp_x = []
+        interes_sp_y = []
+        for i, line_i in enumerate(self.lines):
+            fp_xi = self.points[line_i[0]][0]
+            fp_yi = self.points[line_i[0]][1]
+            sp_xi = self.points[line_i[1]][0]
+            sp_yi = self.points[line_i[1]][1]
+            if ((x < max([fp_xi, sp_xi]) + tolerance) and
+                (x > min([fp_xi, sp_xi]) - tolerance) and
+                (y < max([fp_yi, sp_yi]) + tolerance) and
+                (y > min([fp_yi, sp_yi]) - tolerance)):
+                interes_idxs.append(i)
+                interes_fp_x.append(fp_xi)
+                interes_fp_y.append(fp_yi)
+                interes_sp_x.append(sp_xi)
+                interes_sp_y.append(sp_yi)
+        # Переводим в массивы для удобного счета
+        fp_x = np.array(interes_fp_x)
+        fp_y = np.array(interes_fp_y)
+        sp_x = np.array(interes_sp_x)
+        sp_y = np.array(interes_sp_y)
+        # Для оставленных линий смотрим расстояние от клика до них
+        # Формулу смотри в выводе в Wolfram
+        numerator = np.abs(sp_x*fp_y - x*fp_y - fp_x*sp_y + x*sp_y + fp_x*y - sp_x*y)
+        denominator = np.sqrt(np.power(fp_x,2) - 2 * fp_x * sp_x + np.power(sp_x,2) + np.power(fp_y-sp_y,2))
+        dist = numerator / denominator
+        # Индекс нужной линии в листе интересных
+        interes_cls_idx = np.argmin(dist)
+        return interes_idxs[interes_cls_idx]
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
