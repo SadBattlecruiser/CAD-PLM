@@ -5,10 +5,11 @@ import numpy as np
 
 class GeometryClass():
     def __init__(self):
-        self.points = np.empty([0, 2])                             # Каждая точка - x,y
-        self.lines = np.empty([0, 2], dtype=int)                   # Каждая линия - p1_idx, p2_idx
-        self.selected_points = np.empty([0, 2])                    # Лист выбранных точек
-        self.selected_lines = np.empty([0, 2], dtype=int)          # Лист выбранных линий
+        self.points = np.empty([0, 2])                      # Каждая точка - x,y
+        self.lines = np.empty([0, 2], dtype=int)            # Каждая линия - p1_idx, p2_idx
+        self.selected_points = np.empty([0, 2])             # Лист выбранных точек
+        self.selected_lines = np.empty([0, 2], dtype=int)   # Лист выбранных линий
+        self.constraints = np.empty([0, 4], dtype=int)      # Единая таблица ограничений (тип-id1-id2-value)
         print('GeometryClass constructor')
 
 
@@ -25,6 +26,21 @@ class GeometryClass():
         self.points = np.vstack([self.points, [x1, y1], [x2, y2]])
         # Добавляем линию как индексы двух точек
         self.lines = np.vstack([self.lines, [fp_idx, sp_idx]])
+
+
+    def addPointToSelected(self, idx):
+        self.selected_points = np.vstack([self.selected_points, self.points[idx]])
+
+    def addLineToSelected(self, idx):
+        self.selected_lines = np.vstack([self.selected_lines, self.lines[idx]])
+
+    def dropSelected(self):
+        self.selected_points = np.empty([0, 2])
+        self.selected_lines = np.empty([0, 2], dtype=int)
+
+
+    def addDotCoinc(self, idx1, idx2):
+        pass
 
     # Ближайшая существующая точка
     def findClosePoint(self, x, y):

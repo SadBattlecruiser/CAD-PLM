@@ -34,15 +34,15 @@ class MyApp(QWidget):
         line_btn.resize(btn_size)
         line_btn.move(0, 30)
         #
-        point_pos_btn = QPushButton('Point pos', self)
-        point_pos_btn.clicked.connect(lambda: self.pointPosButton())
-        point_pos_btn.resize(btn_size)
-        point_pos_btn.move(0, 60)
+        point_drawing_btn = QPushButton('Отрисовка точек', self)
+        point_drawing_btn.clicked.connect(lambda: self.pointDrawingButton())
+        point_drawing_btn.resize(btn_size)
+        point_drawing_btn.move(0, 60)
         #
-        line_pos_btn = QPushButton('Line pos', self)
-        line_pos_btn.clicked.connect(lambda: self.linePosButton())
-        line_pos_btn.resize(btn_size)
-        line_pos_btn.move(0, 90)
+        line_drawing_btn = QPushButton('Отрисовка линий', self)
+        line_drawing_btn.clicked.connect(lambda: self.lineDrawingButton())
+        line_drawing_btn.resize(btn_size)
+        line_drawing_btn.move(0, 90)
         #
         dot_coinc_btn = QPushButton('Совпадение точек', self)
         dot_coinc_btn.clicked.connect(lambda: self.dotCoincButton())
@@ -96,25 +96,39 @@ class MyApp(QWidget):
         painter.setRenderHint(QPainter.Antialiasing, True)
         pen = QPen()
         # Отрисовка обычных точек
-        if sc.draw_points_:
+        if sc.draw_points:
             pen.setWidth(6)
             painter.setPen(pen)
             for point_i in gc.points:
                 painter.drawPoint(point_i[0], point_i[1])
         # Отрисовка обычных линий
-        if sc.draw_lines_:
+        if sc.draw_lines:
             pen.setWidth(3)
             painter.setPen(pen)
             for line_i in gc.lines:
                 fp_idx, sp_idx = line_i
                 painter.drawLine(gc.points[fp_idx,0], gc.points[fp_idx,1],
                                  gc.points[sp_idx,0], gc.points[sp_idx,1])
+        # Отрисовка выбранных точек и линий
+        pen.setWidth(6)
+        pen.setColor(QColor(50,50,255))
+        painter.setPen(pen)
+        for point_i in gc.selected_points:
+            painter.drawPoint(point_i[0], point_i[1])
+        pen.setWidth(3)
+        painter.setPen(pen)
+        for line_i in gc.selected_lines:
+            fp_idx, sp_idx = line_i
+            painter.drawLine(gc.points[fp_idx,0], gc.points[fp_idx,1],
+                             gc.points[sp_idx,0], gc.points[sp_idx,1])
+        pen.setColor(QColor(0,0,0))
+        painter.setPen(pen)
         # Отрисовка первой точки линии, если она уже задана
         if sc.getState() == 'line_drawing_2':
             pen.setWidth(6)
             pen.setColor(QColor(255,0,0))
             painter.setPen(pen)
-            painter.drawPoint(gc.ld_fp_x_, gc.ld_fp_y_)
+            painter.drawPoint(gc.ld_fp_x, gc.ld_fp_y)
             pen.setColor(QColor(0,0,0))
             painter.setPen(pen)
     ###
@@ -142,16 +156,20 @@ class MyApp(QWidget):
             print(self.sc.getState())
         self.update()
 
-    def pointPosButton(self):
-        #self.selected_points = np.empty([0, 2])
-        #self.selected_lines = np.empty([0, 2], dtype=int)
-        #self.flags.change_in_point_pos()
+    def pointDrawingButton(self):
+        if self.sc.draw_points:
+            self.sc.draw_points = False
+        else:
+            self.sc.draw_points = True
+        print('sc.draw_points ', self.sc.draw_points)
         self.update()
 
-    def linePosButton(self):
-        #self.selected_points = np.empty([0, 2])
-        #self.selected_lines = np.empty([0, 2], dtype=int)
-        #self.flags.change_in_line_pos()
+    def lineDrawingButton(self):
+        if self.sc.draw_lines:
+            self.sc.draw_lines = False
+        else:
+            self.sc.draw_lines = True
+        print('sc.draw_lines ', self.sc.draw_lines)
         self.update()
 
     def testButton(self):
