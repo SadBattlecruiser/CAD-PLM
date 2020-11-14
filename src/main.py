@@ -123,14 +123,17 @@ class MyApp(QWidget):
                              gc.points[sp_idx,0], gc.points[sp_idx,1])
         pen.setColor(QColor(0,0,0))
         painter.setPen(pen)
-        # Отрисовка первой точки линии, если она уже задана
+        # Иногда надо отрисовать точечку красным
+        pen.setWidth(6)
+        pen.setColor(QColor(255,0,0))
+        painter.setPen(pen)
         if sc.getState() == 'line_drawing_2':
-            pen.setWidth(6)
-            pen.setColor(QColor(255,0,0))
-            painter.setPen(pen)
-            painter.drawPoint(gc.ld_fp_x, gc.ld_fp_y)
-            pen.setColor(QColor(0,0,0))
-            painter.setPen(pen)
+            painter.drawPoint(gc.fp_x, gc.fp_y)
+        elif (sc.getState() == 'dot_coinc_2' or
+              sc.getState() == 'dot_dist_2'):
+            painter.drawPoint(gc.points[gc.fp, 0], gc.points[gc.fp, 1])
+        pen.setColor(QColor(0,0,0))
+        painter.setPen(pen)
     ###
 
 
@@ -177,11 +180,26 @@ class MyApp(QWidget):
         self.update()
 
     def dotCoincButton(self):
-        print('dotCoincButton()')
+        #print('dotCoincButton()')
+        if (self.sc.getState() != 'dot_coinc_1' and
+            self.sc.getState() != 'dot_coinc_2'):
+            self.sc.setState('dot_coinc_1')
+            print(self.sc.getState())
+        else:
+            self.sc.setState('default')
+            print(self.sc.getState())
         self.update()
 
     def dotDistButton(self):
-        print('dotDistButton()')
+        #print('dotDistButton()')
+        if (self.sc.getState() != 'dot_dist_1' and
+            self.sc.getState() != 'dot_dist_2' and
+            self.sc.getState() != 'dot_dist_3'):
+            self.sc.setState('dot_dist_1')
+            print(self.sc.getState())
+        else:
+            self.sc.setState('default')
+            print(self.sc.getState())
         self.update()
 
     def lineParalButton(self):
