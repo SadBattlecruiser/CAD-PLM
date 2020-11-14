@@ -2,50 +2,76 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import numpy as np
 
 from PyQt5.QtWidgets import (QWidget, QToolTip, QPushButton, QApplication)
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-from flagsclass import *
+#from flagsclass import *
+from geometryclass import *
+from stateclass import *
 
 
-
+# Этот класс отвечает за обработку ивентов - нажатий кнопок, отрисовку и др.
 class MyApp(QWidget):
     def __init__(self):
-        self.flags = FlagsClass()                                  # Хранилище флагов состояний
-        self.points = np.empty([0, 2])                             # Каждая точка - x,y
-        self.lines = np.empty([0, 2], dtype=int)                   # Каждая линия - p1_idx, p2_idx
-        self.selected_points = np.empty([0, 2])                    # Лист выбранных точек
-        self.selected_lines = np.empty([0, 2], dtype=int)          # Лист выбранных линий
+        self.gc = GeometryClass()            # Отвечает за работу с геометрией
+        self.sc = StateClass(self.gc)        # Отвечает за смену состояний программы
         super().__init__()
         self.initUI()
         print('MyApp constructor')
 
     def initUI(self):
-        line_btn = QPushButton('Line draw', self)
+        btn_size = QSize(125, 23)
+
+        point_btn = QPushButton('Точка', self)
+        point_btn.clicked.connect(lambda: self.pointButton())
+        point_btn.resize(btn_size)
+        point_btn.move(0, 0)
+        #
+        line_btn = QPushButton('Линия', self)
         line_btn.clicked.connect(lambda: self.lineButton())
-        line_btn.resize(line_btn.sizeHint())
-        line_btn.move(0, 0)
+        line_btn.resize(btn_size)
+        line_btn.move(0, 30)
         #
         point_pos_btn = QPushButton('Point pos', self)
         point_pos_btn.clicked.connect(lambda: self.pointPosButton())
-        point_pos_btn.resize(point_pos_btn.sizeHint())
-        point_pos_btn.move(0, 30)
+        point_pos_btn.resize(btn_size)
+        point_pos_btn.move(0, 60)
         #
         line_pos_btn = QPushButton('Line pos', self)
         line_pos_btn.clicked.connect(lambda: self.linePosButton())
-        line_pos_btn.resize(line_pos_btn.sizeHint())
-        line_pos_btn.move(0, 60)
+        line_pos_btn.resize(btn_size)
+        line_pos_btn.move(0, 90)
         #
-        point_pos_btn = QPushButton('test', self)
-        point_pos_btn.clicked.connect(lambda: self.testButton())
-        point_pos_btn.resize(point_pos_btn.sizeHint())
-        point_pos_btn.move(0, 120)
+        dot_coinc_btn = QPushButton('Совпадение точек', self)
+        dot_coinc_btn.clicked.connect(lambda: self.dotCoincButton())
+        dot_coinc_btn.resize(btn_size)
+        dot_coinc_btn.move(0, 150)
         #
-        self.setGeometry(300, 300, 500, 500)
+        dot_dist_btn = QPushButton('Расст. между точками', self)
+        dot_dist_btn.clicked.connect(lambda: self.dotDistButton())
+        dot_dist_btn.resize(btn_size)
+        dot_dist_btn.move(0, 180)
+        #
+        line_paral_btn = QPushButton('Паралл. прямых', self)
+        line_paral_btn.clicked.connect(lambda: self.lineParalButton())
+        line_paral_btn.resize(btn_size)
+        line_paral_btn.move(0, 210)
+        #
+        line_orth_btn = QPushButton('Перпенд. прямых', self)
+        line_orth_btn.clicked.connect(lambda: self.lineOrthButton())
+        line_orth_btn.resize(btn_size)
+        line_orth_btn.move(0, 240)
+        #
+        line_angle_btn = QPushButton('Угол между прямыми', self)
+        line_angle_btn.clicked.connect(lambda: self.lineAngleButton())
+        line_angle_btn.resize(btn_size)
+        line_angle_btn.move(0, 270)
+        #
+        self.setGeometry(150, 150, 800, 800)
         self.setWindowTitle('lab1 CAD')
+        print(dot_dist_btn.sizeHint())
         self.show()
 
     ### Ивенты
@@ -53,32 +79,7 @@ class MyApp(QWidget):
     def mousePressEvent(self, event):
         print(event)
         print('X:', event.x(), 'Y:', event.y())
-        f = self.flags
-        # Если сейчас рисуем линию
-        if f.in_line_draw:
-            if f.line_first_point:
-                self.first_point = np.array([event.x(), event.y()])
-                f.line_first_point = False
-            else:
-                self.second_point = np.array([event.x(), event.y()])
-                fp_idx = self.points.shape[0]
-                sp_idx = fp_idx + 1
-                # Добавляем обе точки линии ко всем точкам
-                self.points = np.vstack([self.points, np.vstack([self.first_point, self.second_point])])
-                # Добавляем линию как индексы двух точек
-                self.lines = np.vstack([self.lines, [fp_idx, sp_idx]])
-                f.line_first_point = True
-        # Если сейчас выбираем точку
-        elif f.in_select_point:
-            cls_idx = self.findClosePoint(event.x(), event.y())
-            self.selected_points = np.vstack([self.selected_points, self.points[cls_idx]])
-        # Если сейчас выбираем отрезок
-        elif f.in_select_line:
-            cls_idx = self.findCloseLine(event.x(), event.y())
-            self.selected_lines = np.vstack([self.selected_lines, self.lines[cls_idx]])
-        # Иначе просто ставим точку
-        else:
-            self.points = np.vstack([self.points, [event.x(), event.y()]])
+        self.sc.takeClick(event.x(), event.y())
         self.update()
 
     # Этого достаточно, чтобы ловить кнопку
@@ -88,121 +89,96 @@ class MyApp(QWidget):
 
     # Отвечает за отрисовку всего
     def paintEvent(self, event):
+        gc = self.gc
+        sc = self.sc
         painter = QPainter(self)
         #painter.drawPixmap(self.rect(), self._image)
         painter.setRenderHint(QPainter.Antialiasing, True)
         pen = QPen()
         # Отрисовка обычных точек
-        if self.flags.draw_points:
+        if sc.draw_points_:
             pen.setWidth(6)
             painter.setPen(pen)
-            for point_i in self.points:
+            for point_i in gc.points:
                 painter.drawPoint(point_i[0], point_i[1])
         # Отрисовка обычных линий
-        if self.flags.draw_lines:
+        if sc.draw_lines_:
             pen.setWidth(3)
             painter.setPen(pen)
-            for line_i in self.lines:
+            for line_i in gc.lines:
                 fp_idx, sp_idx = line_i
-                painter.drawLine(self.points[fp_idx,0], self.points[fp_idx,1],
-                                 self.points[sp_idx,0], self.points[sp_idx,1])
-        # Отрисовка выбранных точек и линий
-        pen.setWidth(6)
-        pen.setColor(QColor(50,50,255))
-        painter.setPen(pen)
-        for point_i in self.selected_points:
-            painter.drawPoint(point_i[0], point_i[1])
-        pen.setWidth(3)
-        painter.setPen(pen)
-        for line_i in self.selected_lines:
-            fp_idx, sp_idx = line_i
-            painter.drawLine(self.points[fp_idx,0], self.points[fp_idx,1],
-                             self.points[sp_idx,0], self.points[sp_idx,1])
-        pen.setColor(QColor(0,0,0))
-        painter.setPen(pen)
+                painter.drawLine(gc.points[fp_idx,0], gc.points[fp_idx,1],
+                                 gc.points[sp_idx,0], gc.points[sp_idx,1])
         # Отрисовка первой точки линии, если она уже задана
-        if self.flags.in_line_draw and not self.flags.line_first_point:
+        if sc.getState() == 'line_drawing_2':
             pen.setWidth(6)
             pen.setColor(QColor(255,0,0))
             painter.setPen(pen)
-            painter.drawPoint(self.first_point[0], self.first_point[1])
+            painter.drawPoint(gc.ld_fp_x_, gc.ld_fp_y_)
             pen.setColor(QColor(0,0,0))
             painter.setPen(pen)
     ###
 
 
     ### Обработчики
+    def pointButton(self):
+        #print('pointButton()')
+        if self.sc.getState() != 'point_drawing':
+            self.sc.setState('point_drawing')
+            print(self.sc.getState())
+        else:
+            self.sc.setState('default')
+            print(self.sc.getState())
+        self.update()
+
     def lineButton(self):
-        self.selected_points = np.empty([0, 2])
-        self.selected_lines = np.empty([0, 2], dtype=int)
-        self.flags.change_in_line_draw()
+        #print('lineButton()')
+        if (self.sc.getState() != 'line_drawing_1' and
+            self.sc.getState() != 'line_drawing_2'):
+            self.sc.setState('line_drawing_1')
+            print(self.sc.getState())
+        else:
+            self.sc.setState('default')
+            print(self.sc.getState())
         self.update()
 
     def pointPosButton(self):
-        self.selected_points = np.empty([0, 2])
-        self.selected_lines = np.empty([0, 2], dtype=int)
-        self.flags.change_in_point_pos()
+        #self.selected_points = np.empty([0, 2])
+        #self.selected_lines = np.empty([0, 2], dtype=int)
+        #self.flags.change_in_point_pos()
         self.update()
 
     def linePosButton(self):
-        self.selected_points = np.empty([0, 2])
-        self.selected_lines = np.empty([0, 2], dtype=int)
-        self.flags.change_in_line_pos()
+        #self.selected_points = np.empty([0, 2])
+        #self.selected_lines = np.empty([0, 2], dtype=int)
+        #self.flags.change_in_line_pos()
         self.update()
 
     def testButton(self):
-        print(self.points)
+        #print(self.points)
+        self.update()
+
+    def dotCoincButton(self):
+        print('dotCoincButton()')
+        self.update()
+
+    def dotDistButton(self):
+        print('dotDistButton()')
+        self.update()
+
+    def lineParalButton(self):
+        print('lineParalButton()')
+        self.update()
+
+    def lineOrthButton(self):
+        print('lineOrthButton()')
+        self.update()
+
+    def lineAngleButton(self):
+        print('lineAngleButton()')
         self.update()
 
 
-    ### Вспомогательное
-    # Ближайшая точка
-    def findClosePoint(self, x, y):
-        if (self.points.size == 0):
-            print('ERROR: self.points.size == 0 in findClosePoints')
-            return -1
-        dist = np.sqrt(np.power(self.points[:,0] - x, 2) + np.power(self.points[:,1] - y, 2))
-        return np.argmin(dist)
-
-    # Ближайший отрезок
-    def findCloseLine(self, x, y):
-        if (self.lines.size == 0):
-            print('ERROR: self.lines.size == 0 in findCloseLine')
-            return -1
-        tolerance = 20
-        # Оставляем только те линии, в "рамку" которых попал курсор
-        interes_idxs = []
-        interes_fp_x = []
-        interes_fp_y = []
-        interes_sp_x = []
-        interes_sp_y = []
-        for i, line_i in enumerate(self.lines):
-            fp_xi = self.points[line_i[0]][0]
-            fp_yi = self.points[line_i[0]][1]
-            sp_xi = self.points[line_i[1]][0]
-            sp_yi = self.points[line_i[1]][1]
-            if ((x < max([fp_xi, sp_xi]) + tolerance) and
-                (x > min([fp_xi, sp_xi]) - tolerance) and
-                (y < max([fp_yi, sp_yi]) + tolerance) and
-                (y > min([fp_yi, sp_yi]) - tolerance)):
-                interes_idxs.append(i)
-                interes_fp_x.append(fp_xi)
-                interes_fp_y.append(fp_yi)
-                interes_sp_x.append(sp_xi)
-                interes_sp_y.append(sp_yi)
-        # Переводим в массивы для удобного счета
-        fp_x = np.array(interes_fp_x)
-        fp_y = np.array(interes_fp_y)
-        sp_x = np.array(interes_sp_x)
-        sp_y = np.array(interes_sp_y)
-        # Для оставленных линий смотрим расстояние от клика до них
-        # Формулу смотри в выводе в Wolfram
-        numerator = np.abs(sp_x*fp_y - x*fp_y - fp_x*sp_y + x*sp_y + fp_x*y - sp_x*y)
-        denominator = np.sqrt(np.power(fp_x,2) - 2 * fp_x * sp_x + np.power(sp_x,2) + np.power(fp_y-sp_y,2))
-        dist = numerator / denominator
-        # Индекс нужной линии в листе интересных
-        interes_cls_idx = np.argmin(dist)
-        return interes_idxs[interes_cls_idx]
 
 
 if __name__ == '__main__':
