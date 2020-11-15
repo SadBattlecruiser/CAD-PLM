@@ -9,6 +9,19 @@ class StateClass():
         self.draw_lines = True              # Отрисовывать ли линии
         self.gc = geometry
         self.setState('default')
+        # Какое состояние следующее в зависимости от текущего состояния
+        # Здесь все возможные состояния
+        self.next_states = {
+            'default' : 'default',
+            'point_drawing' : 'point_drawing',
+            'line_drawing_1' : 'line_drawing_2',
+            'line_drawing_2' : 'line_drawing_1',
+            'dot_coinc_1' : 'dot_coinc_2',
+            'dot_coinc_2' : 'default',
+            'dot_dist_1' : 'dot_dist_2',
+            'dot_dist_2' : 'dot_dist_3',
+            'dot_dist_3' : 'default',
+        }
         # Что делать с кликом в зависимости от текущего состояния
         self.click_funcs = {
             'default' : self.doNothing,
@@ -20,17 +33,10 @@ class StateClass():
             'dot_dist_1' : self.dotDist1,
             'dot_dist_2' : self.dotDist2,
         }
-        # Какое состояние следующее в зависимости от текущего состояния
-        self.next_states = {
-            'default' : 'default',
-            'point_drawing' : 'point_drawing',
-            'line_drawing_1' : 'line_drawing_2',
-            'line_drawing_2' : 'line_drawing_1',
-            'dot_coinc_1' : 'dot_coinc_2',
-            'dot_coinc_2' : 'default',
-            'dot_dist_1' : 'dot_dist_2',
-            'dot_dist_2' : 'dot_dist_3',
-            'dot_dist_3' : 'default',
+        # Что делать с введенным текстом в зависимости от текущего состояния
+        self.enter_funcs = {
+            'default' : self.doNothing,
+            'dot_dist_3' : self.dotDist3,
         }
         print('StateClass constructor')
 
@@ -50,7 +56,14 @@ class StateClass():
             func(x, y)
             self.state = self.next_states[self.state]
 
-    ### Функции для клика
+    def takeEnter(self, enter_text):
+        # Если есть подходящая функция - обрабатываем
+        if self.state in self.enter_funcs:
+            func = self.enter_funcs[self.state]
+            func(enter_text)
+            self.state = self.next_states[self.state]
+
+    ### Функции для обработки клика
     def pointDrawing(self, x, y):
         self.gc.addPoint(x,y)
 
@@ -82,11 +95,18 @@ class StateClass():
         self.gc.sp = self.gc.findClosePoint(x, y)
         self.gc.addPointToSelected(self.gc.sp)
 
-    def dotDist3(self, dist):
-        self.gc.addDotDist(self.gc.fp, self.gc.sp, dist)
-        print(self.gc.constraints_idxs)
-        self.gc.dropSelected()
-
-    def doNothing(self, x, y):
+    def doNothing(self, arg1, arg2):
         pass
     ###
+
+    ### Функции для обработки введенного текста
+    def doNothing(self, arg):
+        pass
+
+    def dotDist3(self, dist_str):
+        dist = float(dist_str)
+        print(dist)
+        self.gc.addDotDist(self.gc.fp, self.gc.sp, dist)
+        print(self.gc.constraints_idxs)
+        print(self.gc.constraints_values)
+        self.gc.dropSelected()

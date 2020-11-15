@@ -3,7 +3,8 @@
 
 import sys
 
-from PyQt5.QtWidgets import (QWidget, QToolTip, QPushButton, QApplication)
+#from PyQt5.QtWidgets import (QWidget, QToolTip, QPushButton, QApplication)
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
@@ -24,6 +25,22 @@ class MyApp(QWidget):
     def initUI(self):
         btn_size = QSize(125, 23)
 
+        self.setGeometry(150, 150, 800, 800)
+        self.setWindowTitle('lab1 CAD')
+
+        ### Текстовая полосочка
+        self.qle = QLineEdit(self)
+        self.qle.resize(QSize(200, 23))
+        self.qle.move(100, 700)
+        #qle.textChanged[str].connect(lambda: self.onChanged)
+        #qle.returnPressed.connect(lambda: self.onChanged)
+        # Кнопка к ней
+        enter_btn = QPushButton('Ввод', self)
+        enter_btn.clicked.connect(lambda: self.enterButton())
+        enter_btn.resize(btn_size)
+        enter_btn.move(300, 700)
+
+        ### Кнопочки cktdf
         point_btn = QPushButton('Точка', self)
         point_btn.clicked.connect(lambda: self.pointButton())
         point_btn.resize(btn_size)
@@ -69,16 +86,27 @@ class MyApp(QWidget):
         line_angle_btn.resize(btn_size)
         line_angle_btn.move(0, 270)
         #
-        self.setGeometry(150, 150, 800, 800)
-        self.setWindowTitle('lab1 CAD')
-        print(dot_dist_btn.sizeHint())
+        line_hor_btn = QPushButton('Горизонт. прямой', self)
+        line_hor_btn.clicked.connect(lambda: self.lineHorButton())
+        line_hor_btn.resize(btn_size)
+        line_hor_btn.move(0, 300)
+        #
+        line_ver_btn = QPushButton('Вертикал. прямой', self)
+        line_ver_btn.clicked.connect(lambda: self.lineVerButton())
+        line_ver_btn.resize(btn_size)
+        line_ver_btn.move(0, 330)
+        #
+        point_to_line_btn = QPushButton('Принадл. точки прямой', self)
+        point_to_line_btn.clicked.connect(lambda: self.pointToLineButton())
+        point_to_line_btn.resize(btn_size)
+        point_to_line_btn.move(0, 360)
+        #
         self.show()
 
     ### Ивенты
     # Нажатие мыши
     def mousePressEvent(self, event):
-        print(event)
-        print('X:', event.x(), 'Y:', event.y())
+        print('click X:', event.x(), 'Y:', event.y())
         self.sc.takeClick(event.x(), event.y())
         self.update()
 
@@ -129,15 +157,20 @@ class MyApp(QWidget):
         painter.setPen(pen)
         if sc.getState() == 'line_drawing_2':
             painter.drawPoint(gc.fp_x, gc.fp_y)
-        elif (sc.getState() == 'dot_coinc_2' or
-              sc.getState() == 'dot_dist_2'):
-            painter.drawPoint(gc.points[gc.fp, 0], gc.points[gc.fp, 1])
+        #elif (sc.getState() == 'dot_coinc_2' or
+        #      sc.getState() == 'dot_dist_2'):
+        #    painter.drawPoint(gc.points[gc.fp, 0], gc.points[gc.fp, 1])
         pen.setColor(QColor(0,0,0))
         painter.setPen(pen)
     ###
 
+    ### Обработчики кнопочек
+    def enterButton(self):
+        print('enterButton()')
+        self.sc.takeEnter(self.qle.text())
+        self.qle.clear()
+        self.update()
 
-    ### Обработчики
     def pointButton(self):
         #print('pointButton()')
         if self.sc.getState() != 'point_drawing':
@@ -214,6 +247,17 @@ class MyApp(QWidget):
         print('lineAngleButton()')
         self.update()
 
+    def lineHorButton(self):
+        print('lineHorButton()')
+        self.update()
+
+    def lineVerButton(self):
+        print('lineVerButton()')
+        self.update()
+
+    def pointToLineButton(self):
+        print('pointToLineButton()')
+        self.update()
 
 
 
