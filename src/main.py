@@ -28,12 +28,18 @@ class MyApp(QWidget):
         self.setGeometry(150, 150, 800, 800)
         self.setWindowTitle('lab1 CAD')
 
+        ### Лист справа
+        self.lw = QListWidget(self)
+        self.lw.resize(QSize(200, 500))
+        self.lw.move(600, 0)
+        self.lw.itemClicked.connect(lambda item: self.itemClickedList(item))
+        #self.lw.item(3).setSelected(True)
+
+        #item.text('test!')
         ### Текстовая полосочка
         self.qle = QLineEdit(self)
         self.qle.resize(QSize(200, 23))
         self.qle.move(100, 700)
-        #qle.textChanged[str].connect(lambda: self.onChanged)
-        #qle.returnPressed.connect(lambda: self.onChanged)
         # Кнопка к ней
         enter_btn = QPushButton('Ввод', self)
         enter_btn.clicked.connect(lambda: self.enterButton())
@@ -162,6 +168,9 @@ class MyApp(QWidget):
         #    painter.drawPoint(gc.points[gc.fp, 0], gc.points[gc.fp, 1])
         pen.setColor(QColor(0,0,0))
         painter.setPen(pen)
+
+        # Выводим все ограничения в лист
+        self.printConstraintsToList()
     ###
 
     ### Обработчики кнопочек
@@ -290,7 +299,32 @@ class MyApp(QWidget):
             print(self.sc.getState())
         self.update()
 
+    ### Обработчики для листа
+    def itemClickedList(self, item):
+        print(item)
 
+    def printConstraintsToList(self):
+        self.lw.clear()
+        values = self.gc.constraints_values
+        for i, constr_i in enumerate(self.gc.constraints_idxs):
+            if constr_i[0] == 0:
+                self.lw.addItem('полож. т. ' + str(constr_i[1]) + ' | ' + str(values[i, 0]) + str(values[i, 1]))
+            elif constr_i[0] == 1:
+                self.lw.addItem('совп. т. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]))
+            elif constr_i[0] == 2:
+                self.lw.addItem('расст. т. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]) + ' | ' + str(values[i, 0]))
+            elif constr_i[0] == 3:
+                self.lw.addItem('прлл. л. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]))
+            elif constr_i[0] == 4:
+                self.lw.addItem('перп. л. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]))
+            elif constr_i[0] == 5:
+                self.lw.addItem('угол. л. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]) + ' | ' + str(values[i, 0]))
+            elif constr_i[0] == 6:
+                self.lw.addItem('гориз. л. ' + str(constr_i[1]))
+            elif constr_i[0] == 7:
+                self.lw.addItem('верт. л. ' + str(constr_i[1]))
+            elif constr_i[0] == 8:
+                self.lw.addItem('прндл. т. ' + str(constr_i[1]) + ' л. ' + str(constr_i[2]))
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
