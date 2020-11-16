@@ -105,8 +105,8 @@ class GeometryClass():
         self.constraints_idxs  = np.vstack([self.constraints_idxs , [4, idx1, idx2]])
         self.constraints_values = np.vstack([self.constraints_values, [0., 0.]])
 
-    def addLineAngle(self, idx, angle):
-        self.constraints_idxs  = np.vstack([self.constraints_idxs , [5, idx, 0]])
+    def addLineAngle(self, idx1, idx2, angle):
+        self.constraints_idxs  = np.vstack([self.constraints_idxs , [5, idx1, idx2]])
         self.constraints_values = np.vstack([self.constraints_values, [angle, 0.]])
 
     def addLineHor(self, idx):

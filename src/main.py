@@ -208,10 +208,6 @@ class MyApp(QWidget):
         print('sc.draw_lines ', self.sc.draw_lines)
         self.update()
 
-    def testButton(self):
-        #print(self.points)
-        self.update()
-
     def dotCoincButton(self):
         #print('dotCoincButton()')
         if (self.sc.getState() != 'dot_coinc_1' and
@@ -236,27 +232,62 @@ class MyApp(QWidget):
         self.update()
 
     def lineParalButton(self):
-        print('lineParalButton()')
+        if (self.sc.getState() != 'line_paral_1' and
+            self.sc.getState() != 'line_paral_2'):
+            self.sc.setState('line_paral_1')
+            print(self.sc.getState())
+        else:
+            self.sc.setState('default')
+            print(self.sc.getState())
         self.update()
 
     def lineOrthButton(self):
-        print('lineOrthButton()')
+        if (self.sc.getState() != 'line_orth_1' and
+            self.sc.getState() != 'line_orth_2'):
+            self.sc.setState('line_orth_1')
+            print(self.sc.getState())
+        else:
+            self.sc.setState('default')
+            print(self.sc.getState())
         self.update()
 
     def lineAngleButton(self):
-        print('lineAngleButton()')
+        if (self.sc.getState() != 'line_angle_1' and
+            self.sc.getState() != 'line_angle_2' and
+            self.sc.getState() != 'line_angle_3'):
+            self.sc.setState('line_angle_1')
+            print(self.sc.getState())
+        else:
+            self.sc.setState('default')
+            print(self.sc.getState())
         self.update()
 
     def lineHorButton(self):
-        print('lineHorButton()')
+        if (self.sc.getState() != 'line_hor'):
+            self.sc.setState('line_hor')
+            print(self.sc.getState())
+        else:
+            self.sc.setState('default')
+            print(self.sc.getState())
         self.update()
 
     def lineVerButton(self):
-        print('lineVerButton()')
+        if (self.sc.getState() != 'line_ver'):
+            self.sc.setState('line_ver')
+            print(self.sc.getState())
+        else:
+            self.sc.setState('default')
+            print(self.sc.getState())
         self.update()
 
     def pointToLineButton(self):
-        print('pointToLineButton()')
+        if (self.sc.getState() != 'point_to_line_1' and
+            self.sc.getState() != 'point_to_line_2'):
+            self.sc.setState('point_to_line_1')
+            print(self.sc.getState())
+        else:
+            self.sc.setState('default')
+            print(self.sc.getState())
         self.update()
 
 
