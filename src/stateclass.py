@@ -75,15 +75,23 @@ class StateClass():
         # Если есть подходящая функция - обрабатываем
         if self.state in self.click_funcs:
             func = self.click_funcs[self.state]
-            func(x, y)
-            self.state = self.next_states[self.state]
+            res = func(x, y)
+            if res == -1:
+                print('ERROR')
+                self.setState('default')
+            else:
+                self.state = self.next_states[self.state]
 
     def takeEnter(self, enter_text):
         # Если есть подходящая функция - обрабатываем
         if self.state in self.enter_funcs:
             func = self.enter_funcs[self.state]
             func(enter_text)
-            self.state = self.next_states[self.state]
+            if res == -1:
+                print('ERROR')
+                self.setState('default')
+            else:
+                self.state = self.next_states[self.state]
 
     ### Функции для обработки клика
     def doNothingClick(self, arg1, arg2):
@@ -104,63 +112,107 @@ class StateClass():
 
     def dotCoinc1(self, x, y):
         self.gc.dc_fp = self.gc.findClosePoint(x, y)
+        if self.gc.dc_fp == -1:
+            return -1
         self.gc.addPointToSelected(self.gc.dc_fp)
+        return 0
 
     def dotCoinc2(self, x, y):
         self.gc.dc_sp = self.gc.findClosePoint(x, y)
+        if self.gc.dc_sp == -1:
+            return -1
         self.gc.addDotCoinc(self.gc.dc_fp, self.gc.dc_sp)
         #print(self.gc.constraints_idxs)
         self.gc.dropSelected()
+        return 0
 
     def dotDist1(self, x, y):
         self.gc.fp = self.gc.findClosePoint(x, y)
+        if self.gc.fp == -1:
+            return -1
         self.gc.addPointToSelected(self.gc.fp)
+        return 0
 
     def dotDist2(self, x, y):
         self.gc.sp = self.gc.findClosePoint(x, y)
+        if self.gc.sp == -1:
+            return -1
         self.gc.addPointToSelected(self.gc.sp)
+        return 0
 
     def lineParal1(self, x, y):
         self.gc.fl = self.gc.findCloseLine(x, y)
+        if self.gc.fl == -1:
+            return -1
         self.gc.addLineToSelected(self.gc.fl)
+        return 0
 
     def lineParal2(self, x, y):
         self.gc.sl = self.gc.findCloseLine(x, y)
+        if self.gc.sl == -1:
+            return -1
         #self.gc.addLineToSelected(self.gc.sl)
         self.gc.addLineParal(self.gc.fl, self.gc.sl)
         self.gc.dropSelected()
+        return 0
 
     def lineOrth1(self, x, y):
         self.gc.fl = self.gc.findCloseLine(x, y)
+        if self.gc.fl == -1:
+            return -1
         self.gc.addLineToSelected(self.gc.fl)
+        return 0
 
     def lineOrth2(self, x, y):
         self.gc.sl = self.gc.findCloseLine(x, y)
+        if self.gc.sl == -1:
+            return -1
         self.gc.addLineOrth(self.gc.fl, self.gc.sl)
         self.gc.dropSelected()
+        return 0
 
     def lineAngle1(self, x, y):
         self.gc.fl = self.gc.findCloseLine(x, y)
+        if self.gc.fl == -1:
+            return -1
         self.gc.addLineToSelected(self.gc.fl)
+        return 0
 
     def lineAngle2(self, x, y):
         self.gc.sl = self.gc.findCloseLine(x, y)
+        if self.gc.fl == -1:
+            return -1
         self.gc.addLineToSelected(self.gc.sl)
+        return 0
 
     def lineHor(self, x, y):
-        self.gc.addLineHor(self.gc.findCloseLine(x, y))
+        self.gc.fl = self.gc.findCloseLine(x, y)
+        if self.gc.fl == -1:
+            return -1
+        self.gc.addLineHor(self.gc.fl)
+        return 0
 
     def lineVer(self, x, y):
-        self.gc.addLineVer(self.gc.findCloseLine(x, y))
+        self.gc.fl = self.gc.findCloseLine(x, y)
+        if self.gc.fl == -1:
+            return -1
+        self.gc.addLineVer(self.gc.fl)
+        return 0
 
     def pointToLine1(self, x, y):
         self.gc.fp = self.gc.findClosePoint(x, y)
+        if self.gc.fp == -1:
+            return -1
         self.gc.addPointToSelected(self.gc.fp)
+        return 0
 
     def pointToLine2(self, x, y):
         self.gc.sl = self.gc.findCloseLine(x, y)
+        if self.gc.sl == -1:
+            return -1
         self.gc.addPointToLine(self.gc.fp, self.gc.sl)
         self.gc.dropSelected()
+        return 0
     ###
 
     ### Функции для обработки введенного текста
