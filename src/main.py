@@ -107,6 +107,11 @@ class MyApp(QWidget):
         point_to_line_btn.resize(btn_size)
         point_to_line_btn.move(0, 360)
         #
+        solve_btn = QPushButton('Пересчитать', self)
+        solve_btn.clicked.connect(lambda: self.solveButton())
+        solve_btn.resize(btn_size)
+        solve_btn.move(0, 360)
+        #
         self.show()
 
     ### Ивенты
@@ -299,9 +304,14 @@ class MyApp(QWidget):
             print(self.sc.getState())
         self.update()
 
+    def solveButton(self):
+        self.gc.satisfy_constraints()
+        self.update()
+
     ### Обработчики для листа
     def itemClickedList(self, item):
-        print(item)
+        self.sc.setState('select_constrain')
+        self.sc.selectConstrain(self, constr_idx)
 
     def printConstraintsToList(self):
         self.lw.clear()

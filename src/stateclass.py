@@ -32,6 +32,7 @@ class StateClass():
             'line_ver' : 'default',
             'point_to_line_1' : 'point_to_line_2',
             'point_to_line_2' : 'default',
+            'select_constrain' : 'default',
         }
         # Что делать с кликом в зависимости от текущего состояния
         self.click_funcs = {
@@ -86,7 +87,7 @@ class StateClass():
         # Если есть подходящая функция - обрабатываем
         if self.state in self.enter_funcs:
             func = self.enter_funcs[self.state]
-            func(enter_text)
+            res = func(enter_text)
             if res == -1:
                 print('ERROR')
                 self.setState('default')
@@ -234,3 +235,21 @@ class StateClass():
         print(self.gc.constraints_idxs)
         print(self.gc.constraints_values)
         self.gc.dropSelected()
+
+    ### То, что вызываем напрямую
+    def selectConstrain(self, constr_idx):
+        idxs = self.gc.constraints_idxs
+        type = idxs[constr_idx, 0]
+        if (type == 0):
+            self.gc.addPointToSelected(idxs[constr_idx, 1])
+        elif (type == 1 or type == 2):
+            self.gc.addPointToSelected(idxs[constr_idx, 1])
+            self.gc.addPointToSelected(idxs[constr_idx, 2])
+        elif (type == 3 or type == 4 or type == 5):
+            self.gc.addLineToSelected(idxs[constr_idx, 1])
+            self.gc.addLineToSelected(idxs[constr_idx, 2])
+        elif (type == 6 or type == 7):
+            self.gc.addLineToSelected(idxs[constr_idx, 1])
+        elif (type == 8):
+            self.gc.addPointToSelected(idxs[constr_idx, 1])
+            self.gc.addLineToSelected(idxs[constr_idx, 2])

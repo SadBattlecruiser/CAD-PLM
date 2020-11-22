@@ -2,15 +2,18 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+#from scipy.optimize import newton_krylov
+#from scipy.optimize import broyden1
+from scipy.optimize import *
 
 class GeometryClass():
     def __init__(self):
         self.points = np.empty([0, 2])                      # Каждая точка - x,y
         self.lines = np.empty([0, 2], dtype=int)            # Каждая линия - p1_idx, p2_idx
-        self.selected_points = np.empty([0, 2])             # Лист выбранных точек
-        self.selected_lines = np.empty([0, 2], dtype=int)   # Лист выбранных линий
-        self.constraints_idxs = np.empty([0, 3], dtype=int)  # Таблица ограничений (тип-idx1-idx2)
+        self.constraints_idxs = np.empty([0, 3], dtype=int) # Таблица ограничений (тип-idx1-idx2)
         self.constraints_values = np.empty([0, 2])          # Тут храним значения ограничений (value1-value2)
+        self.selected_points = np.empty([0, 2])             # Массив выбранных точек - нужно только для gui
+        self.selected_lines = np.empty([0, 2], dtype=int)   # Массив выбранных линий - нужно только для gui
         print('GeometryClass constructor')
 
     ### Работа с точками и линиями
@@ -86,7 +89,7 @@ class GeometryClass():
 
     ### Добавляем ограничения в таблицу
     def addDotPos(self, idx, x, y):
-        self.constraints_idxs = np.vstack([self.constraints_idxs , [1, idx, 0]])
+        self.constraints_idxs = np.vstack([self.constraints_idxs , [0, idx, 0]])
         self.constraints_values = np.vstack([self.constraints_values, [x, y]])
 
     def addDotCoinc(self, idx1, idx2):
@@ -121,4 +124,111 @@ class GeometryClass():
         self.constraints_idxs  = np.vstack([self.constraints_idxs , [8, idx_p, idx_l]])
         self.constraints_values = np.vstack([self.constraints_values, [0., 0.]])
 
-    ###
+    ### Для рассчета решения
+    # Для каждой точки все ограничения, в которых она участвует
+    # Причем отдельно для x и для y, т.к. на кажду т. будет по две производных
+    # def points_constraints_form(self):
+    #     pc_ll = []
+    #     for i in range(2 * self.points.shape[0]):
+    #         pc_ll.append([])
+    #     for i, constr_i in enumerate(self.constraints_idxs):
+    #         type, idx_k, idx_l = constraint_i
+    #         #val1, val2 = self.constraints_values[i]
+    #
+
+
+
+    # Непосредственно система, корни которой ищем
+    def equations_func(self, l_vec):
+        # Кол-во уравнений = Ndx + Ndy + Nlambd = 2*Npoints + Nconstr
+        n_points = self.points.shape[0]
+        n_constr = self.constraints_idxs.shape[0]
+        n_eqs = n_points * 2 + n_constr
+        r_vec = np.zeros(n_eqs)
+        # Первыми идут производные по изменению координат
+        # Они равны изменениям координат + то, что приплюсуем дальше
+        r_vec[: n_points*2] = l_vec[: n_points*2]
+        # Дальше для каждого ограничения отдельные уравнения
+        #r_vec_cnt = 0
+        for i, constr_i in enumerate(self.constraints_idxs):
+            type, idx_k, idx_l = constr_i
+            val1, val2 = self.constraints_values[i]
+            if (type == 0):                 # Положение точки
+                pass
+            elif (type == 1 or type == 2):  # Расстояние между точками
+                # Производная по первому иксу
+                r_vec[2*idx_k] += self.Dfi2Ddxk(l_vec, idx_k, idx_l, val1, i)
+                # Производная по первому игреку
+                r_vec[2*idx_k+1] += self.Dfi2Ddyk(l_vec, idx_k, idx_l, val1, i)
+                # Производная по второму иксу
+                r_vec[2*idx_l] += self.Dfi2Ddxl(l_vec, idx_k, idx_l, val1, i)
+                # Производная по второму игреку
+                r_vec[2*idx_l+1] += self.Dfi2Ddyl(l_vec, idx_k, idx_l, val1, i)
+                # производная по лямбде
+                r_vec[2*n_points+i] = self.fi2(l_vec, idx_k, idx_l, val1)
+            elif (type == 3):               # Параллелность линий
+                pass
+            elif (type == 4):               # Перпендикулярность линий
+                pass
+            elif (type == 5):               # Угол между линиями
+                pass
+            elif (type == 6):               # Горизонтальность линии
+                pass
+            elif (type == 7):               # Вертикальность линии
+                pass
+            elif (type == 8):               # Принадлежность точки линии
+                pass
+        return r_vec
+
+    # Пересчитать положения с учетом ограничений
+    def satisfy_constraints(self):
+        n_points = self.points.shape[0]
+        n_constr = self.constraints_idxs.shape[0]
+        #r_vec0 = np.linspace(0., 10., n_points*2 + n_constr)
+        r_vec0 = np.zeros(n_points*2 + n_constr)
+        r_vec = fsolve(self.equations_func, r_vec0)
+        delta = np.reshape(r_vec[:n_points*2], [n_points, 2])
+        #print(r_vec)
+        #print(self.equations_func(r_vec0))
+        #print(delta)
+        self.points += delta
+
+    # Сами функции ограничений и производные
+    def fi2(self, l_vec, idx_k, idx_l, dist):
+        xk = self.points[idx_k, 0]
+        yk = self.points[idx_k, 1]
+        xl = self.points[idx_l, 0]
+        yl = self.points[idx_l, 1]
+        return (xk-xl+l_vec[2*idx_k]-l_vec[2*idx_l])**2 + (yk-yl+l_vec[2*idx_k+1]-l_vec[2*idx_l+1])**2 - dist**2
+
+    def Dfi2Ddxk(self, l_vec, idx_k, idx_l, dist, idx_eq):
+        xk = self.points[idx_k, 0]
+        xl = self.points[idx_l, 0]
+        return 2 * l_vec[idx_eq] * (xk-xl+l_vec[2*idx_k]-l_vec[2*idx_l])
+
+    def Dfi2Ddxl(self, l_vec, idx_k, idx_l, dist, idx_eq):
+        xk = self.points[idx_k, 0]
+        xl = self.points[idx_l, 0]
+        return -2 * l_vec[idx_eq] * (xk-xl+l_vec[2*idx_k]-l_vec[2*idx_l])
+
+    def Dfi2Ddyk(self, l_vec, idx_k, idx_l, dist, idx_eq):
+        yk = self.points[idx_k, 1]
+        yl = self.points[idx_l, 1]
+        return 2 * l_vec[idx_eq] * (yk-yl+l_vec[2*idx_k+1]-l_vec[2*idx_l+1])
+
+    def Dfi2Ddyl(self, l_vec, idx_k, idx_l, dist, idx_eq):
+        yk = self.points[idx_k, 1]
+        yl = self.points[idx_l, 1]
+        return -2 * l_vec[idx_eq] * (yk-yl+l_vec[2*idx_k+1]-l_vec[2*idx_l+1])
+
+
+
+
+if __name__ == '__main__':
+    print('Не туда воюешь!')
+    # gc = GeometryClass()
+    # gc.addPoint(100., 50.)
+    # gc.addPoint(150., 30.)
+    # gc.addDotDist(0, 1, 0.)
+    # gc.satisfy_constraints()
+    # print(gc.points)
