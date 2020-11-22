@@ -193,7 +193,8 @@ class GeometryClass():
         #print(delta)
         self.points += delta
 
-    # Сами функции ограничений и производные
+    ### Сами функции ограничений и производные
+    # Расстояние между точками
     def fi2(self, l_vec, idx_k, idx_l, dist):
         xk = self.points[idx_k, 0]
         yk = self.points[idx_k, 1]
@@ -221,6 +222,7 @@ class GeometryClass():
         yl = self.points[idx_l, 1]
         return -2 * l_vec[idx_eq] * (yk-yl+l_vec[2*idx_k+1]-l_vec[2*idx_l+1])
 
+    # 
 
 
 

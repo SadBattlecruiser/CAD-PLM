@@ -3,12 +3,10 @@
 
 import sys
 
-#from PyQt5.QtWidgets import (QWidget, QToolTip, QPushButton, QApplication)
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-#from flagsclass import *
 from geometryclass import *
 from stateclass import *
 
@@ -33,9 +31,7 @@ class MyApp(QWidget):
         self.lw.resize(QSize(200, 500))
         self.lw.move(600, 0)
         self.lw.itemClicked.connect(lambda item: self.itemClickedList(item))
-        #self.lw.item(3).setSelected(True)
 
-        #item.text('test!')
         ### Текстовая полосочка
         self.qle = QLineEdit(self)
         self.qle.resize(QSize(200, 23))
@@ -107,10 +103,10 @@ class MyApp(QWidget):
         point_to_line_btn.resize(btn_size)
         point_to_line_btn.move(0, 360)
         #
-        solve_btn = QPushButton('Пересчитать', self)
+        solve_btn = QPushButton('Рассчитать', self)
         solve_btn.clicked.connect(lambda: self.solveButton())
         solve_btn.resize(btn_size)
-        solve_btn.move(0, 360)
+        solve_btn.move(0, 450)
         #
         self.show()
 
@@ -311,30 +307,32 @@ class MyApp(QWidget):
     ### Обработчики для листа
     def itemClickedList(self, item):
         self.sc.setState('select_constrain')
-        self.sc.selectConstrain(self, constr_idx)
+        constr_idx = int(item.text().split('|', 1)[0]) - 1
+        self.sc.selectConstrain(constr_idx)
+        self.update()
 
     def printConstraintsToList(self):
         self.lw.clear()
         values = self.gc.constraints_values
         for i, constr_i in enumerate(self.gc.constraints_idxs):
             if constr_i[0] == 0:
-                self.lw.addItem('полож. т. ' + str(constr_i[1]) + ' | ' + str(values[i, 0]) + str(values[i, 1]))
+                self.lw.addItem(str(i + 1) + ' | полож. т. ' + str(constr_i[1]) + ' | ' + str(values[i, 0]) + str(values[i, 1]))
             elif constr_i[0] == 1:
-                self.lw.addItem('совп. т. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]))
+                self.lw.addItem(str(i + 1) + ' | совп. т. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]))
             elif constr_i[0] == 2:
-                self.lw.addItem('расст. т. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]) + ' | ' + str(values[i, 0]))
+                self.lw.addItem(str(i + 1) + ' | расст. т. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]) + ' | ' + str(values[i, 0]))
             elif constr_i[0] == 3:
-                self.lw.addItem('прлл. л. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]))
+                self.lw.addItem(str(i + 1) + ' | прлл. л. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]))
             elif constr_i[0] == 4:
-                self.lw.addItem('перп. л. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]))
+                self.lw.addItem(str(i + 1) + ' | перп. л. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]))
             elif constr_i[0] == 5:
-                self.lw.addItem('угол. л. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]) + ' | ' + str(values[i, 0]))
+                self.lw.addItem(str(i + 1) + ' | угол. л. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]) + ' | ' + str(values[i, 0]))
             elif constr_i[0] == 6:
-                self.lw.addItem('гориз. л. ' + str(constr_i[1]))
+                self.lw.addItem(str(i + 1) + ' | гориз. л. ' + str(constr_i[1]))
             elif constr_i[0] == 7:
-                self.lw.addItem('верт. л. ' + str(constr_i[1]))
+                self.lw.addItem(str(i + 1) + ' | верт. л. ' + str(constr_i[1]))
             elif constr_i[0] == 8:
-                self.lw.addItem('прндл. т. ' + str(constr_i[1]) + ' л. ' + str(constr_i[2]))
+                self.lw.addItem(str(i + 1) + ' | прндл. т. ' + str(constr_i[1]) + ' л. ' + str(constr_i[2]))
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

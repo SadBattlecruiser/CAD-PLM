@@ -240,11 +240,13 @@ class StateClass():
     def selectConstrain(self, constr_idx):
         idxs = self.gc.constraints_idxs
         type = idxs[constr_idx, 0]
+        print('type', type)
         if (type == 0):
             self.gc.addPointToSelected(idxs[constr_idx, 1])
         elif (type == 1 or type == 2):
             self.gc.addPointToSelected(idxs[constr_idx, 1])
             self.gc.addPointToSelected(idxs[constr_idx, 2])
+            print(self.gc.selected_points)
         elif (type == 3 or type == 4 or type == 5):
             self.gc.addLineToSelected(idxs[constr_idx, 1])
             self.gc.addLineToSelected(idxs[constr_idx, 2])
