@@ -167,7 +167,18 @@ class GeometryClass():
                 # производная по лямбде
                 r_vec[2*n_points+i] = self.fi2(l_vec, idx_k, idx_l, val1)
             elif (type == 3):               # Параллелность линий
-                pass
+                idx_kp, idx_lp = self.lines[idx_k]
+                idx_pp, idx_qp = self.lines[idx_l]
+                r_vec[2*idx_kp] += self.Dfi3Ddxk(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*idx_kp+1] += self.Dfi3Ddyk(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*idx_lp] += self.Dfi3Ddxl(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*idx_lp+1] += self.Dfi3Ddyl(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*idx_pp] += self.Dfi3Ddxp(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*idx_pp+1] += self.Dfi3Ddyp(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*idx_qp] += self.Dfi3Ddxq(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*idx_qp+1] += self.Dfi3Ddyq(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*n_points+i] = self.fi3(l_vec, idx_kp, idx_lp, idx_pp, idx_qp)
+
             elif (type == 4):               # Перпендикулярность линий
                 pass
             elif (type == 5):               # Угол между линиями
@@ -207,23 +218,81 @@ class GeometryClass():
         xl = self.points[idx_l, 0]
         return 2 * l_vec[idx_eq] * (xk-xl+l_vec[2*idx_k]-l_vec[2*idx_l])
 
-    def Dfi2Ddxl(self, l_vec, idx_k, idx_l, dist, idx_eq):
-        xk = self.points[idx_k, 0]
-        xl = self.points[idx_l, 0]
-        return -2 * l_vec[idx_eq] * (xk-xl+l_vec[2*idx_k]-l_vec[2*idx_l])
-
     def Dfi2Ddyk(self, l_vec, idx_k, idx_l, dist, idx_eq):
         yk = self.points[idx_k, 1]
         yl = self.points[idx_l, 1]
         return 2 * l_vec[idx_eq] * (yk-yl+l_vec[2*idx_k+1]-l_vec[2*idx_l+1])
+
+    def Dfi2Ddxl(self, l_vec, idx_k, idx_l, dist, idx_eq):
+        xk = self.points[idx_k, 0]
+        xl = self.points[idx_l, 0]
+        return -2 * l_vec[idx_eq] * (xk-xl+l_vec[2*idx_k]-l_vec[2*idx_l])
 
     def Dfi2Ddyl(self, l_vec, idx_k, idx_l, dist, idx_eq):
         yk = self.points[idx_k, 1]
         yl = self.points[idx_l, 1]
         return -2 * l_vec[idx_eq] * (yk-yl+l_vec[2*idx_k+1]-l_vec[2*idx_l+1])
 
-    # 
+    # Параллельность двух прямых
+    def fi3(self, l_vec, idx_k, idx_l, idx_p, idx_q):
+        xk = self.points[idx_k, 0]
+        yk = self.points[idx_k, 1]
+        xl = self.points[idx_l, 0]
+        yl = self.points[idx_l, 1]
+        xp = self.points[idx_p, 0]
+        yp = self.points[idx_p, 1]
+        xq = self.points[idx_q, 0]
+        yq = self.points[idx_q, 1]
+        return ((xk+l_vec[2*idx_k]-xl-l_vec[2*idx_l]) * (yp+l_vec[2*idx_p+1]-yq-l_vec[2*idx_q+1]) -
+                (xp+l_vec[2*idx_p]-xq-l_vec[2*idx_q]) * (yk+l_vec[2*idx_k+1]-yl-l_vec[2*idx_l+1]))
 
+    def Dfi3Ddxk(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        yp = self.points[idx_p, 1]
+        yq = self.points[idx_q, 1]
+        L = l_vec[idx_eq]
+        return L * (yp+l_vec[2*idx_p+1]-yq-l_vec[2*idx_q+1])
+
+    def Dfi3Ddyk(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        xp = self.points[idx_p, 0]
+        xq = self.points[idx_q, 0]
+        L = l_vec[idx_eq]
+        return -L * (xp+l_vec[2*idx_p]-xq-l_vec[2*idx_q])
+
+    def Dfi3Ddxl(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        yp = self.points[idx_p, 1]
+        yq = self.points[idx_q, 1]
+        L = l_vec[idx_eq]
+        return -L * (yp+l_vec[2*idx_p+1]-yq-l_vec[2*idx_q+1])
+
+    def Dfi3Ddyl(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        xp = self.points[idx_p, 0]
+        xq = self.points[idx_q, 0]
+        L = l_vec[idx_eq]
+        return L * (xp+l_vec[2*idx_p]-xq-l_vec[2*idx_q])
+
+    def Dfi3Ddxp(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        yk = self.points[idx_k, 1]
+        yl = self.points[idx_l, 1]
+        L = l_vec[idx_eq]
+        return -L * (yk+l_vec[2*idx_k+1]-yl-l_vec[2*idx_l+1])
+
+    def Dfi3Ddyp(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        xk = self.points[idx_k, 0]
+        xl = self.points[idx_l, 0]
+        L = l_vec[idx_eq]
+        return L * (xk+l_vec[2*idx_k]-xl-l_vec[2*idx_l])
+
+    def Dfi3Ddxq(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        yk = self.points[idx_k, 1]
+        yl = self.points[idx_l, 1]
+        L = l_vec[idx_eq]
+        return L * (yk+l_vec[2*idx_k+1]-yl-l_vec[2*idx_l+1])
+
+    def Dfi3Ddyq(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        xk = self.points[idx_k, 0]
+        xl = self.points[idx_l, 0]
+        L = l_vec[idx_eq]
+        return -L * (xk+l_vec[2*idx_k]-xl-l_vec[2*idx_l])
 
 
 if __name__ == '__main__':
