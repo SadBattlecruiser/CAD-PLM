@@ -178,11 +178,21 @@ class GeometryClass():
                 r_vec[2*idx_qp] += self.Dfi3Ddxq(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
                 r_vec[2*idx_qp+1] += self.Dfi3Ddyq(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
                 r_vec[2*n_points+i] = self.fi3(l_vec, idx_kp, idx_lp, idx_pp, idx_qp)
-
             elif (type == 4):               # Перпендикулярность линий
                 pass
             elif (type == 5):               # Угол между линиями
-                pass
+                idx_kp, idx_lp = self.lines[idx_k]
+                idx_pp, idx_qp = self.lines[idx_l]
+                angle_rad = np.radians(val1)
+                r_vec[2*idx_kp] += self.Dfi5Ddxk(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, angle_rad, i)
+                r_vec[2*idx_kp+1] += self.Dfi5Ddyk(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, angle_rad, i)
+                r_vec[2*idx_lp] += self.Dfi5Ddxl(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, angle_rad, i)
+                r_vec[2*idx_lp+1] += self.Dfi5Ddyl(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, angle_rad, i)
+                r_vec[2*idx_pp] += self.Dfi5Ddxp(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, angle_rad, i)
+                r_vec[2*idx_pp+1] += self.Dfi5Ddyp(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, angle_rad, i)
+                r_vec[2*idx_qp] += self.Dfi5Ddxq(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, angle_rad, i)
+                r_vec[2*idx_qp+1] += self.Dfi5Ddyq(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, angle_rad, i)
+                r_vec[2*n_points+i] = self.fi5(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, angle_rad)
             elif (type == 6):               # Горизонтальность линии
                 pass
             elif (type == 7):               # Вертикальность линии
@@ -294,6 +304,158 @@ class GeometryClass():
         L = l_vec[idx_eq]
         return -L * (xk+l_vec[2*idx_k]-xl-l_vec[2*idx_l])
 
+    # Угол между двумя прямыми
+    def fi5(self, l_vec, idx_k, idx_l, idx_p, idx_q, angle):
+        xk = self.points[idx_k, 0]
+        yk = self.points[idx_k, 1]
+        xl = self.points[idx_l, 0]
+        yl = self.points[idx_l, 1]
+        xp = self.points[idx_p, 0]
+        yp = self.points[idx_p, 1]
+        xq = self.points[idx_q, 0]
+        yq = self.points[idx_q, 1]
+        # Вектора линий
+        x1 = xk + l_vec[2*idx_k] - xl - l_vec[2*idx_l]
+        y1 = yk + l_vec[2*idx_k+1] - yl - l_vec[2*idx_l+1]
+        x2 = xp + l_vec[2*idx_p] - xq - l_vec[2*idx_q]
+        y2 = yp + l_vec[2*idx_p+1] - yq - l_vec[2*idx_q+1]
+        return x1*x2 + y1*y2 - np.sqrt(x1**2 + y1**2)*np.sqrt(x2**2 + y2**2)*np.cos(angle)
+
+    def Dfi5Ddxk(self, l_vec, idx_k, idx_l, idx_p, idx_q, angle, idx_eq):
+        xk = self.points[idx_k, 0]
+        yk = self.points[idx_k, 1]
+        xl = self.points[idx_l, 0]
+        yl = self.points[idx_l, 1]
+        xp = self.points[idx_p, 0]
+        yp = self.points[idx_p, 1]
+        xq = self.points[idx_q, 0]
+        yq = self.points[idx_q, 1]
+        L = l_vec[idx_eq]
+        # Вектора линий
+        x1 = xk + l_vec[2*idx_k] - xl - l_vec[2*idx_l]
+        y1 = yk + l_vec[2*idx_k+1] - yl - l_vec[2*idx_l+1]
+        x2 = xp + l_vec[2*idx_p] - xq - l_vec[2*idx_q]
+        y2 = yp + l_vec[2*idx_p+1] - yq - l_vec[2*idx_q+1]
+        return L * (x2 - x1*np.sqrt(x2**2 + y2**2)*np.cos(angle) / np.sqrt(x1**2 + y1**2))
+
+    def Dfi5Ddyk(self, l_vec, idx_k, idx_l, idx_p, idx_q, angle, idx_eq):
+        xk = self.points[idx_k, 0]
+        yk = self.points[idx_k, 1]
+        xl = self.points[idx_l, 0]
+        yl = self.points[idx_l, 1]
+        xp = self.points[idx_p, 0]
+        yp = self.points[idx_p, 1]
+        xq = self.points[idx_q, 0]
+        yq = self.points[idx_q, 1]
+        L = l_vec[idx_eq]
+        # Вектора линий
+        x1 = xk + l_vec[2*idx_k] - xl - l_vec[2*idx_l]
+        y1 = yk + l_vec[2*idx_k+1] - yl - l_vec[2*idx_l+1]
+        x2 = xp + l_vec[2*idx_p] - xq - l_vec[2*idx_q]
+        y2 = yp + l_vec[2*idx_p+1] - yq - l_vec[2*idx_q+1]
+        return L * (y2 - y1*np.sqrt(x2**2 + y2**2)*np.cos(angle) / np.sqrt(x1**2 + y1**2))
+
+    def Dfi5Ddxl(self, l_vec, idx_k, idx_l, idx_p, idx_q, angle, idx_eq):
+        xk = self.points[idx_k, 0]
+        yk = self.points[idx_k, 1]
+        xl = self.points[idx_l, 0]
+        yl = self.points[idx_l, 1]
+        xp = self.points[idx_p, 0]
+        yp = self.points[idx_p, 1]
+        xq = self.points[idx_q, 0]
+        yq = self.points[idx_q, 1]
+        L = l_vec[idx_eq]
+        # Вектора линий
+        x1 = xk + l_vec[2*idx_k] - xl - l_vec[2*idx_l]
+        y1 = yk + l_vec[2*idx_k+1] - yl - l_vec[2*idx_l+1]
+        x2 = xp + l_vec[2*idx_p] - xq - l_vec[2*idx_q]
+        y2 = yp + l_vec[2*idx_p+1] - yq - l_vec[2*idx_q+1]
+        return L * (-x2 + x1*np.sqrt(x2**2 + y2**2)*np.cos(angle) / np.sqrt(x1**2 + y1**2))
+
+    def Dfi5Ddyl(self, l_vec, idx_k, idx_l, idx_p, idx_q, angle, idx_eq):
+        xk = self.points[idx_k, 0]
+        yk = self.points[idx_k, 1]
+        xl = self.points[idx_l, 0]
+        yl = self.points[idx_l, 1]
+        xp = self.points[idx_p, 0]
+        yp = self.points[idx_p, 1]
+        xq = self.points[idx_q, 0]
+        yq = self.points[idx_q, 1]
+        L = l_vec[idx_eq]
+        # Вектора линий
+        x1 = xk + l_vec[2*idx_k] - xl - l_vec[2*idx_l]
+        y1 = yk + l_vec[2*idx_k+1] - yl - l_vec[2*idx_l+1]
+        x2 = xp + l_vec[2*idx_p] - xq - l_vec[2*idx_q]
+        y2 = yp + l_vec[2*idx_p+1] - yq - l_vec[2*idx_q+1]
+        return L * (-y2 + y1*np.sqrt(x2**2 + y2**2)*np.cos(angle) / np.sqrt(x1**2 + y1**2))
+
+    def Dfi5Ddxp(self, l_vec, idx_k, idx_l, idx_p, idx_q, angle, idx_eq):
+        xk = self.points[idx_k, 0]
+        yk = self.points[idx_k, 1]
+        xl = self.points[idx_l, 0]
+        yl = self.points[idx_l, 1]
+        xp = self.points[idx_p, 0]
+        yp = self.points[idx_p, 1]
+        xq = self.points[idx_q, 0]
+        yq = self.points[idx_q, 1]
+        L = l_vec[idx_eq]
+        # Вектора линий
+        x1 = xk + l_vec[2*idx_k] - xl - l_vec[2*idx_l]
+        y1 = yk + l_vec[2*idx_k+1] - yl - l_vec[2*idx_l+1]
+        x2 = xp + l_vec[2*idx_p] - xq - l_vec[2*idx_q]
+        y2 = yp + l_vec[2*idx_p+1] - yq - l_vec[2*idx_q+1]
+        return L * (x1 - x2*np.sqrt(x1**2 + y1**2)*np.cos(angle) / np.sqrt(x2**2 + y2**2))
+
+    def Dfi5Ddyp(self, l_vec, idx_k, idx_l, idx_p, idx_q, angle, idx_eq):
+        xk = self.points[idx_k, 0]
+        yk = self.points[idx_k, 1]
+        xl = self.points[idx_l, 0]
+        yl = self.points[idx_l, 1]
+        xp = self.points[idx_p, 0]
+        yp = self.points[idx_p, 1]
+        xq = self.points[idx_q, 0]
+        yq = self.points[idx_q, 1]
+        L = l_vec[idx_eq]
+        # Вектора линий
+        x1 = xk + l_vec[2*idx_k] - xl - l_vec[2*idx_l]
+        y1 = yk + l_vec[2*idx_k+1] - yl - l_vec[2*idx_l+1]
+        x2 = xp + l_vec[2*idx_p] - xq - l_vec[2*idx_q]
+        y2 = yp + l_vec[2*idx_p+1] - yq - l_vec[2*idx_q+1]
+        return L * (y1 - y2*np.sqrt(x1**2 + y1**2)*np.cos(angle) / np.sqrt(x2**2 + y2**2))
+
+    def Dfi5Ddxq(self, l_vec, idx_k, idx_l, idx_p, idx_q, angle, idx_eq):
+        xk = self.points[idx_k, 0]
+        yk = self.points[idx_k, 1]
+        xl = self.points[idx_l, 0]
+        yl = self.points[idx_l, 1]
+        xp = self.points[idx_p, 0]
+        yp = self.points[idx_p, 1]
+        xq = self.points[idx_q, 0]
+        yq = self.points[idx_q, 1]
+        L = l_vec[idx_eq]
+        # Вектора линий
+        x1 = xk + l_vec[2*idx_k] - xl - l_vec[2*idx_l]
+        y1 = yk + l_vec[2*idx_k+1] - yl - l_vec[2*idx_l+1]
+        x2 = xp + l_vec[2*idx_p] - xq - l_vec[2*idx_q]
+        y2 = yp + l_vec[2*idx_p+1] - yq - l_vec[2*idx_q+1]
+        return L * (-x1 + x2*np.sqrt(x1**2 + y1**2)*np.cos(angle) / np.sqrt(x2**2 + y2**2))
+
+    def Dfi5Ddyq(self, l_vec, idx_k, idx_l, idx_p, idx_q, angle, idx_eq):
+        xk = self.points[idx_k, 0]
+        yk = self.points[idx_k, 1]
+        xl = self.points[idx_l, 0]
+        yl = self.points[idx_l, 1]
+        xp = self.points[idx_p, 0]
+        yp = self.points[idx_p, 1]
+        xq = self.points[idx_q, 0]
+        yq = self.points[idx_q, 1]
+        L = l_vec[idx_eq]
+        # Вектора линий
+        x1 = xk + l_vec[2*idx_k] - xl - l_vec[2*idx_l]
+        y1 = yk + l_vec[2*idx_k+1] - yl - l_vec[2*idx_l+1]
+        x2 = xp + l_vec[2*idx_p] - xq - l_vec[2*idx_q]
+        y2 = yp + l_vec[2*idx_p+1] - yq - l_vec[2*idx_q+1]
+        return L * (-y1 + y2*np.sqrt(x1**2 + y1**2)*np.cos(angle) / np.sqrt(x2**2 + y2**2))
 
 if __name__ == '__main__':
     print('Не туда воюешь!')
