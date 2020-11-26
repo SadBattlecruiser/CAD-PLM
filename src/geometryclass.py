@@ -150,6 +150,9 @@ class GeometryClass():
         r_vec[: n_points*2] = l_vec[: n_points*2]
         # Дальше для каждого ограничения отдельные уравнения
         #r_vec_cnt = 0
+
+
+
         for i, constr_i in enumerate(self.constraints_idxs):
             type, idx_k, idx_l = constr_i
             val1, val2 = self.constraints_values[i]
@@ -179,6 +182,17 @@ class GeometryClass():
                 r_vec[2*idx_qp+1] += self.Dfi3Ddyq(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
                 r_vec[2*n_points+i] = self.fi3(l_vec, idx_kp, idx_lp, idx_pp, idx_qp)
             elif (type == 4):               # Перпендикулярность линий
+                idx_kp, idx_lp = self.lines[idx_k]
+                idx_pp, idx_qp = self.lines[idx_l]
+                # r_vec[2*idx_kp] += self.Dfi3Ddxk(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                # r_vec[2*idx_kp+1] += self.Dfi3Ddyk(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                # r_vec[2*idx_lp] += self.Dfi3Ddxl(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                # r_vec[2*idx_lp+1] += self.Dfi3Ddyl(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                # r_vec[2*idx_pp] += self.Dfi3Ddxp(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                # r_vec[2*idx_pp+1] += self.Dfi3Ddyp(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                # r_vec[2*idx_qp] += self.Dfi3Ddxq(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                # r_vec[2*idx_qp+1] += self.Dfi3Ddyq(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                # r_vec[2*n_points+i] = self.fi3(l_vec, idx_kp, idx_lp, idx_pp, idx_qp)
                 pass
             elif (type == 5):               # Угол между линиями
                 idx_kp, idx_lp = self.lines[idx_k]
@@ -194,8 +208,19 @@ class GeometryClass():
                 r_vec[2*idx_qp+1] += self.Dfi5Ddyq(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, angle_rad, i)
                 r_vec[2*n_points+i] = self.fi5(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, angle_rad)
             elif (type == 6):               # Горизонтальность линии
-                pass
+                idx_kp, idx_lp = self.lines[idx_k]
+                # r_vec[2*idx_kp] += self.Dfi6Ddxk(l_vec, idx_kp, idx_lp, angle_rad, i)
+                # r_vec[2*idx_kp+1] += self.Dfi6Ddyk(l_vec, idx_kp, idx_lp, angle_rad, i)
+                # r_vec[2*idx_lp] += self.Dfi6Ddxl(l_vec, idx_kp, idx_lp, angle_rad, i)
+                # r_vec[2*idx_lp+1] += self.Dfi6Ddyl(l_vec, idx_kp, idx_lp, angle_rad, i)
+                # r_vec[2*n_points+i] = self.fi6(l_vec, idx_kp, idx_lp, angle_rad)
             elif (type == 7):               # Вертикальность линии
+                idx_kp, idx_lp = self.lines[idx_k]
+                # r_vec[2*idx_kp] += self.Dfi7Ddxk(l_vec, idx_kp, idx_lp, i)
+                # r_vec[2*idx_kp+1] += self.Dfi7Ddyk(l_vec, idx_kp, idx_lp, i)
+                # r_vec[2*idx_lp] += self.Dfi7Ddxl(l_vec, idx_kp, idx_lp, i)
+                # r_vec[2*idx_lp+1] += self.Dfi7Ddyl(l_vec, idx_kp, idx_lp, i)
+                # r_vec[2*n_points+i] = self.fi7(l_vec, idx_kp, idx_lp)
                 pass
             elif (type == 8):               # Принадлежность точки линии
                 idx_kp = idx_k
