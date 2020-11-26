@@ -316,17 +316,17 @@ class MyApp(QWidget):
         values = self.gc.constraints_values
         for i, constr_i in enumerate(self.gc.constraints_idxs):
             if constr_i[0] == 0:
-                self.lw.addItem(str(i + 1) + ' | полож. т. ' + str(constr_i[1]) + ' | ' + str(values[i, 0]) + str(values[i, 1]))
+                self.lw.addItem(str(i + 1) + ' | полож. т. ' + str(constr_i[1]) + '\t | ' + str(values[i, 0]) + str(values[i, 1]))
             elif constr_i[0] == 1:
                 self.lw.addItem(str(i + 1) + ' | совп. т. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]))
             elif constr_i[0] == 2:
-                self.lw.addItem(str(i + 1) + ' | расст. т. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]) + ' | ' + str(values[i, 0]))
+                self.lw.addItem(str(i + 1) + ' | расст. т. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]) + '\t | ' + str(values[i, 0]))
             elif constr_i[0] == 3:
                 self.lw.addItem(str(i + 1) + ' | прлл. л. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]))
             elif constr_i[0] == 4:
                 self.lw.addItem(str(i + 1) + ' | перп. л. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]))
             elif constr_i[0] == 5:
-                self.lw.addItem(str(i + 1) + ' | угол. л. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]) + ' | ' + str(values[i, 0]))
+                self.lw.addItem(str(i + 1) + ' | угол. л. ' + str(constr_i[1]) + ' и ' + str(constr_i[2]) + '\t | ' + str(values[i, 0]))
             elif constr_i[0] == 6:
                 self.lw.addItem(str(i + 1) + ' | гориз. л. ' + str(constr_i[1]))
             elif constr_i[0] == 7:

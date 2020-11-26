@@ -198,7 +198,15 @@ class GeometryClass():
             elif (type == 7):               # Вертикальность линии
                 pass
             elif (type == 8):               # Принадлежность точки линии
-                pass
+                idx_kp = idx_k
+                idx_pp, idx_qp = self.lines[idx_l]
+                r_vec[2*idx_kp] += self.Dfi8Ddxk(l_vec, idx_kp, idx_pp, idx_qp, i)
+                r_vec[2*idx_kp+1] += self.Dfi8Ddyk(l_vec, idx_kp, idx_pp, idx_qp, i)
+                r_vec[2*idx_pp] += self.Dfi8Ddxp(l_vec, idx_kp, idx_pp, idx_qp, i)
+                r_vec[2*idx_pp+1] += self.Dfi8Ddyp(l_vec, idx_kp, idx_pp, idx_qp, i)
+                r_vec[2*idx_qp] += self.Dfi8Ddxq(l_vec, idx_kp, idx_pp, idx_qp, i)
+                r_vec[2*idx_qp+1] += self.Dfi8Ddyq(l_vec, idx_kp, idx_pp, idx_qp, i)
+                r_vec[2*n_points+i] = self.fi8(l_vec, idx_kp, idx_pp, idx_qp)
         return r_vec
 
     # Пересчитать положения с учетом ограничений
@@ -456,6 +464,59 @@ class GeometryClass():
         x2 = xp + l_vec[2*idx_p] - xq - l_vec[2*idx_q]
         y2 = yp + l_vec[2*idx_p+1] - yq - l_vec[2*idx_q+1]
         return L * (-y1 + y2*np.sqrt(x1**2 + y1**2)*np.cos(angle) / np.sqrt(x2**2 + y2**2))
+
+    # Принадлежность точки прямой
+    def fi8(self, l_vec, idx_k, idx_p, idx_q):
+        xk = self.points[idx_k, 0]
+        yk = self.points[idx_k, 1]
+        xp = self.points[idx_p, 0]
+        yp = self.points[idx_p, 1]
+        xq = self.points[idx_q, 0]
+        yq = self.points[idx_q, 1]
+        # Вектора линий
+        x1 = xk + l_vec[2*idx_k] - xp - l_vec[2*idx_p]
+        y1 = yk + l_vec[2*idx_k+1] - yp - l_vec[2*idx_p+1]
+        x2 = xq + l_vec[2*idx_q] - xk - l_vec[2*idx_k]
+        y2 = yq + l_vec[2*idx_q+1] - yk - l_vec[2*idx_k+1]
+        return np.cross([x1,y1,0], [x2,y2,0])[2]
+
+    def Dfi8Ddxk(self, l_vec, idx_k, idx_p, idx_q, idx_eq):
+        yp = self.points[idx_p, 1]
+        yq = self.points[idx_q, 1]
+        L = l_vec[idx_eq]
+        # Вектора линий
+        return L * (-yp - l_vec[2*idx_p+1] + yq + l_vec[2*idx_q+1])
+
+    def Dfi8Ddyk(self, l_vec, idx_k, idx_p, idx_q, idx_eq):
+        xp = self.points[idx_p, 0]
+        xq = self.points[idx_q, 0]
+        L = l_vec[idx_eq]
+        return L * (xp + l_vec[2*idx_p] - xq - l_vec[2*idx_q])
+
+    def Dfi8Ddxp(self, l_vec, idx_k, idx_p, idx_q, idx_eq):
+        yk = self.points[idx_k, 1]
+        yq = self.points[idx_q, 1]
+        L = l_vec[idx_eq]
+        return L * (yk + l_vec[2*idx_k+1] - yq - l_vec[2*idx_q+1])
+
+    def Dfi8Ddyp(self, l_vec, idx_k, idx_p, idx_q, idx_eq):
+        xk = self.points[idx_k, 0]
+        xq = self.points[idx_q, 0]
+        L = l_vec[idx_eq]
+        return L * (-xk - l_vec[2*idx_k] + xq + l_vec[2*idx_q])
+
+    def Dfi8Ddxq(self, l_vec, idx_k, idx_p, idx_q, idx_eq):
+        yk = self.points[idx_k, 1]
+        yp = self.points[idx_p, 1]
+        L = l_vec[idx_eq]
+        return L * (-yk - l_vec[2*idx_k+1] + yp + l_vec[2*idx_p+1])
+
+    def Dfi8Ddyq(self, l_vec, idx_k, idx_p, idx_q, idx_eq):
+        xk = self.points[idx_k, 0]
+        xp = self.points[idx_p, 0]
+        L = l_vec[idx_eq]
+        return L * (xk + l_vec[2*idx_k] - xp - l_vec[2*idx_p])
+
 
 if __name__ == '__main__':
     print('Не туда воюешь!')
