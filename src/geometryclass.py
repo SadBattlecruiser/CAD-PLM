@@ -184,16 +184,15 @@ class GeometryClass():
             elif (type == 4):               # Перпендикулярность линий
                 idx_kp, idx_lp = self.lines[idx_k]
                 idx_pp, idx_qp = self.lines[idx_l]
-                # r_vec[2*idx_kp] += self.Dfi3Ddxk(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
-                # r_vec[2*idx_kp+1] += self.Dfi3Ddyk(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
-                # r_vec[2*idx_lp] += self.Dfi3Ddxl(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
-                # r_vec[2*idx_lp+1] += self.Dfi3Ddyl(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
-                # r_vec[2*idx_pp] += self.Dfi3Ddxp(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
-                # r_vec[2*idx_pp+1] += self.Dfi3Ddyp(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
-                # r_vec[2*idx_qp] += self.Dfi3Ddxq(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
-                # r_vec[2*idx_qp+1] += self.Dfi3Ddyq(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
-                # r_vec[2*n_points+i] = self.fi3(l_vec, idx_kp, idx_lp, idx_pp, idx_qp)
-                pass
+                r_vec[2*idx_kp] += self.Dfi4Ddxk(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*idx_kp+1] += self.Dfi4Ddyk(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*idx_lp] += self.Dfi4Ddxl(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*idx_lp+1] += self.Dfi4Ddyl(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*idx_pp] += self.Dfi4Ddxp(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*idx_pp+1] += self.Dfi4Ddyp(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*idx_qp] += self.Dfi4Ddxq(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*idx_qp+1] += self.Dfi4Ddyq(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, i)
+                r_vec[2*n_points+i] = self.fi4(l_vec, idx_kp, idx_lp, idx_pp, idx_qp)
             elif (type == 5):               # Угол между линиями
                 idx_kp, idx_lp = self.lines[idx_k]
                 idx_pp, idx_qp = self.lines[idx_l]
@@ -332,6 +331,69 @@ class GeometryClass():
         xl = self.points[idx_l, 0]
         L = l_vec[idx_eq]
         return -L * (xk+l_vec[2*idx_k]-xl-l_vec[2*idx_l])
+
+    # Перпендикулярность двух прямых
+    def fi4(self, l_vec, idx_k, idx_l, idx_p, idx_q):
+        xk = self.points[idx_k, 0]
+        yk = self.points[idx_k, 1]
+        xl = self.points[idx_l, 0]
+        yl = self.points[idx_l, 1]
+        xp = self.points[idx_p, 0]
+        yp = self.points[idx_p, 1]
+        xq = self.points[idx_q, 0]
+        yq = self.points[idx_q, 1]
+        return ((xk+l_vec[2*idx_k]-xl-l_vec[2*idx_l]) * (xp+l_vec[2*idx_p]-xq-l_vec[2*idx_q]) +
+                (yp+l_vec[2*idx_p+1]-yq-l_vec[2*idx_q+1]) * (yk+l_vec[2*idx_k+1]-yl-l_vec[2*idx_l+1]))
+
+    def Dfi4Ddxk(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        xp = self.points[idx_p, 0]
+        xq = self.points[idx_q, 0]
+        L = l_vec[idx_eq]
+        return L * (xp+l_vec[2*idx_p]-xq-l_vec[2*idx_q])
+
+    def Dfi4Ddyk(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        yp = self.points[idx_p, 1]
+        yq = self.points[idx_q, 1]
+        L = l_vec[idx_eq]
+        return L * (yp+l_vec[2*idx_p+1]-yq-l_vec[2*idx_q+1])
+
+    def Dfi4Ddxl(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        xp = self.points[idx_p, 0]
+        xq = self.points[idx_q, 0]
+        L = l_vec[idx_eq]
+        return -L * (xp+l_vec[2*idx_p]-xq-l_vec[2*idx_q])
+
+    def Dfi4Ddyl(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        yp = self.points[idx_p, 1]
+        yq = self.points[idx_q, 1]
+        L = l_vec[idx_eq]
+        return -L * (yp+l_vec[2*idx_p+1]-yq-l_vec[2*idx_q+1])
+
+    def Dfi4Ddxp(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        xk = self.points[idx_k, 0]
+        xl = self.points[idx_l, 0]
+        L = l_vec[idx_eq]
+        return L * (xk+l_vec[2*idx_k]-xl-l_vec[2*idx_l])
+
+    def Dfi4Ddyp(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        yk = self.points[idx_k, 1]
+        yl = self.points[idx_l, 1]
+        L = l_vec[idx_eq]
+        return L * (yk+l_vec[2*idx_k+1]-yl-l_vec[2*idx_l+1])
+
+    def Dfi4Ddxq(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        xk = self.points[idx_k, 0]
+        xl = self.points[idx_l, 0]
+        L = l_vec[idx_eq]
+        return -L * (xk+l_vec[2*idx_k]-xl-l_vec[2*idx_l])
+
+    def Dfi4Ddyq(self, l_vec, idx_k, idx_l, idx_p, idx_q, idx_eq):
+        yk = self.points[idx_k, 1]
+        yl = self.points[idx_l, 1]
+        L = l_vec[idx_eq]
+        return -L * (yk+l_vec[2*idx_k+1]-yl-l_vec[2*idx_l+1])
+
+
 
     # Угол между двумя прямыми
     def fi5(self, l_vec, idx_k, idx_l, idx_p, idx_q, angle):
