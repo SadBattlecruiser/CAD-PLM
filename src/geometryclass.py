@@ -209,18 +209,14 @@ class GeometryClass():
                 r_vec[2*n_points+i] = self.fi5(l_vec, idx_kp, idx_lp, idx_pp, idx_qp, angle_rad)
             elif (type == 6):               # Горизонтальность линии
                 idx_kp, idx_lp = self.lines[idx_k]
-                # r_vec[2*idx_kp] += self.Dfi6Ddxk(l_vec, idx_kp, idx_lp, angle_rad, i)
-                # r_vec[2*idx_kp+1] += self.Dfi6Ddyk(l_vec, idx_kp, idx_lp, angle_rad, i)
-                # r_vec[2*idx_lp] += self.Dfi6Ddxl(l_vec, idx_kp, idx_lp, angle_rad, i)
-                # r_vec[2*idx_lp+1] += self.Dfi6Ddyl(l_vec, idx_kp, idx_lp, angle_rad, i)
-                # r_vec[2*n_points+i] = self.fi6(l_vec, idx_kp, idx_lp, angle_rad)
+                r_vec[2*idx_kp+1] += self.Dfi6Ddyk(l_vec, i)
+                r_vec[2*idx_lp+1] += self.Dfi6Ddyl(l_vec, i)
+                r_vec[2*n_points+i] = self.fi6(l_vec, idx_kp, idx_lp)
             elif (type == 7):               # Вертикальность линии
                 idx_kp, idx_lp = self.lines[idx_k]
-                # r_vec[2*idx_kp] += self.Dfi7Ddxk(l_vec, idx_kp, idx_lp, i)
-                # r_vec[2*idx_kp+1] += self.Dfi7Ddyk(l_vec, idx_kp, idx_lp, i)
-                # r_vec[2*idx_lp] += self.Dfi7Ddxl(l_vec, idx_kp, idx_lp, i)
-                # r_vec[2*idx_lp+1] += self.Dfi7Ddyl(l_vec, idx_kp, idx_lp, i)
-                # r_vec[2*n_points+i] = self.fi7(l_vec, idx_kp, idx_lp)
+                r_vec[2*idx_kp] += self.Dfi7Ddxk(l_vec, i)
+                r_vec[2*idx_lp] += self.Dfi7Ddxl(l_vec, i)
+                r_vec[2*n_points+i] = self.fi7(l_vec, idx_kp, idx_lp)
                 pass
             elif (type == 8):               # Принадлежность точки линии
                 idx_kp = idx_k
@@ -489,6 +485,36 @@ class GeometryClass():
         x2 = xp + l_vec[2*idx_p] - xq - l_vec[2*idx_q]
         y2 = yp + l_vec[2*idx_p+1] - yq - l_vec[2*idx_q+1]
         return L * (-y1 + y2*np.sqrt(x1**2 + y1**2)*np.cos(angle) / np.sqrt(x2**2 + y2**2))
+
+    # Горизонтальность прямой
+    def fi6(self, l_vec, idx_k, idx_l):
+        yk = self.points[idx_k, 1]
+        yl = self.points[idx_l, 1]
+        dyk = l_vec[2*idx_k+1]
+        dyl = l_vec[2*idx_l+1]
+        return yl + dyl - yk - dyk
+
+    def Dfi6Ddyk(self, l_vec, idx_eq):
+        return -l_vec[idx_eq]
+
+    def Dfi6Ddyl(self, l_vec, idx_eq):
+        return l_vec[idx_eq]
+
+
+    # Вертикальность прямой
+    def fi7(self, l_vec, idx_k, idx_l):
+        xk = self.points[idx_k, 0]
+        xl = self.points[idx_l, 0]
+        dxk = l_vec[2*idx_k]
+        dxl = l_vec[2*idx_l]
+        return xl + dxl - xk - dxk
+
+    def Dfi7Ddxk(self, l_vec, idx_eq):
+        return -l_vec[idx_eq]
+
+    def Dfi7Ddxl(self, l_vec, idx_eq):
+        return l_vec[idx_eq]
+
 
     # Принадлежность точки прямой
     def fi8(self, l_vec, idx_k, idx_p, idx_q):
