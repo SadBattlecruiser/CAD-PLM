@@ -7,6 +7,7 @@ class StateClass():
     def __init__(self, geometry):
         self.draw_points = True             # Отрисовывать ли точки
         self.draw_lines = True              # Отрисовывать ли линии
+        self.draw_grid = True               # Отрисовывать ли сетку
         self.gc = geometry
         self.setState('default')
         # Какое состояние следующее в зависимости от текущего состояния

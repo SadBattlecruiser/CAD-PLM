@@ -231,16 +231,13 @@ class GeometryClass():
 
     # Пересчитать положения с учетом ограничений
     def satisfy_constraints(self):
-        n_points = self.points.shape[0]
-        n_constr = self.constraints_idxs.shape[0]
-        #r_vec0 = np.linspace(0., 10., n_points*2 + n_constr)
-        r_vec0 = np.zeros(n_points*2 + n_constr)
-        r_vec = fsolve(self.equations_func, r_vec0)
-        delta = np.reshape(r_vec[:n_points*2], [n_points, 2])
-        #print(r_vec)
-        #print(self.equations_func(r_vec0))
-        #print(delta)
-        self.points += delta
+        for i in range(6):
+            n_points = self.points.shape[0]
+            n_constr = self.constraints_idxs.shape[0]
+            r_vec0 = np.zeros(n_points*2 + n_constr)
+            r_vec = fsolve(self.equations_func, r_vec0)
+            delta = np.reshape(r_vec[:n_points*2], [n_points, 2])
+            self.points += delta
 
     ### Сами функции ограничений и производные
     # Расстояние между точками
@@ -392,7 +389,6 @@ class GeometryClass():
         yl = self.points[idx_l, 1]
         L = l_vec[idx_eq]
         return -L * (yk+l_vec[2*idx_k+1]-yl-l_vec[2*idx_l+1])
-
 
 
     # Угол между двумя прямыми
@@ -548,6 +544,7 @@ class GeometryClass():
         y2 = yp + l_vec[2*idx_p+1] - yq - l_vec[2*idx_q+1]
         return L * (-y1 + y2*np.sqrt(x1**2 + y1**2)*np.cos(angle) / np.sqrt(x2**2 + y2**2))
 
+
     # Горизонтальность прямой
     def fi6(self, l_vec, idx_k, idx_l):
         yk = self.points[idx_k, 1]
@@ -633,9 +630,3 @@ class GeometryClass():
 
 if __name__ == '__main__':
     print('Не туда воюешь!')
-    # gc = GeometryClass()
-    # gc.addPoint(100., 50.)
-    # gc.addPoint(150., 30.)
-    # gc.addDotDist(0, 1, 0.)
-    # gc.satisfy_constraints()
-    # print(gc.points)

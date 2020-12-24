@@ -23,26 +23,34 @@ class MyApp(QWidget):
     def initUI(self):
         btn_size = QSize(125, 23)
 
-        self.setGeometry(150, 150, 800, 800)
+        self.setGeometry(100, 100, 1800, 900)
         self.setWindowTitle('lab1 CAD')
+
+        ### Для отрисовки поля
+        self.frame_ox = 150
+        self.frame_oy = 0
+        self.frame_target = QRectF(self.frame_ox, self.frame_oy, 1210+self.frame_ox, 810+self.frame_oy)
+        self.frame_source = QRectF(0.0, 0.0, 1210.0, 810.0)
+        self.base_image = QImage("base.png")
+        self.frame_image = QImage("base_frame.png")
 
         ### Лист справа
         self.lw = QListWidget(self)
-        self.lw.resize(QSize(200, 500))
-        self.lw.move(600, 0)
+        self.lw.resize(QSize(200, 808))
+        self.lw.move(1535, 0)
         self.lw.itemClicked.connect(lambda item: self.itemClickedList(item))
 
         ### Текстовая полосочка
         self.qle = QLineEdit(self)
         self.qle.resize(QSize(200, 23))
-        self.qle.move(100, 700)
+        self.qle.move(self.frame_ox, 850+self.frame_oy)
         # Кнопка к ней
         enter_btn = QPushButton('Ввод', self)
         enter_btn.clicked.connect(lambda: self.enterButton())
         enter_btn.resize(btn_size)
-        enter_btn.move(300, 700)
+        enter_btn.move(self.frame_ox + 200, 850+self.frame_oy)
 
-        ### Кнопочки cktdf
+        ### Кнопочки слева
         point_btn = QPushButton('Точка', self)
         point_btn.clicked.connect(lambda: self.pointButton())
         point_btn.resize(btn_size)
@@ -52,16 +60,6 @@ class MyApp(QWidget):
         line_btn.clicked.connect(lambda: self.lineButton())
         line_btn.resize(btn_size)
         line_btn.move(0, 30)
-        #
-        point_drawing_btn = QPushButton('Отрисовка точек', self)
-        point_drawing_btn.clicked.connect(lambda: self.pointDrawingButton())
-        point_drawing_btn.resize(btn_size)
-        point_drawing_btn.move(0, 60)
-        #
-        line_drawing_btn = QPushButton('Отрисовка линий', self)
-        line_drawing_btn.clicked.connect(lambda: self.lineDrawingButton())
-        line_drawing_btn.resize(btn_size)
-        line_drawing_btn.move(0, 90)
         #
         dot_coinc_btn = QPushButton('Совпадение точек', self)
         dot_coinc_btn.clicked.connect(lambda: self.dotCoincButton())
@@ -106,13 +104,35 @@ class MyApp(QWidget):
         solve_btn = QPushButton('Рассчитать', self)
         solve_btn.clicked.connect(lambda: self.solveButton())
         solve_btn.resize(btn_size)
-        solve_btn.move(0, 450)
+        solve_btn.move(0, 400)
+        #
+        point_drawing_btn = QPushButton('Отрисовка точек', self)
+        point_drawing_btn.clicked.connect(lambda: self.pointDrawingButton())
+        point_drawing_btn.resize(btn_size)
+        point_drawing_btn.move(0, 520)
+        #
+        line_drawing_btn = QPushButton('Отрисовка линий', self)
+        line_drawing_btn.clicked.connect(lambda: self.lineDrawingButton())
+        line_drawing_btn.resize(btn_size)
+        line_drawing_btn.move(0, 550)
+        #
+        grid_drawing_btn = QPushButton('Отрисовка сетки', self)
+        grid_drawing_btn.clicked.connect(lambda: self.gridDrawingButton())
+        grid_drawing_btn.resize(btn_size)
+        grid_drawing_btn.move(0, 580)
         #
         self.show()
 
     ### Ивенты
     # Нажатие мыши
     def mousePressEvent(self, event):
+        # Проверяем, попали ли мы в рамку
+        if  (event.x() < self.frame_target.left() + 3) or\
+            (event.x() > self.frame_target.right() - 3) or\
+            (event.y() > self.frame_target.bottom() - 8) or\
+            (event.y() < self.frame_target.top()):
+            print('out click X:', event.x(), 'Y:', event.y())
+            return;
         print('click X:', event.x(), 'Y:', event.y())
         self.sc.takeClick(event.x(), event.y())
         self.update()
@@ -127,10 +147,14 @@ class MyApp(QWidget):
         gc = self.gc
         sc = self.sc
         painter = QPainter(self)
-        #painter.drawPixmap(self.rect(), self._image)
         painter.setRenderHint(QPainter.Antialiasing, True)
-        pen = QPen()
+        # Отрисовка поля
+        if sc.draw_grid:
+            painter.drawImage(self.frame_target, self.base_image, self.frame_source);
+        else:
+            painter.drawImage(self.frame_target, self.frame_image, self.frame_source);
         # Отрисовка обычных точек
+        pen = QPen()
         if sc.draw_points:
             pen.setWidth(6)
             painter.setPen(pen)
@@ -216,6 +240,14 @@ class MyApp(QWidget):
         else:
             self.sc.draw_lines = True
         print('sc.draw_lines ', self.sc.draw_lines)
+        self.update()
+
+    def gridDrawingButton(self):
+        if self.sc.draw_grid:
+            self.sc.draw_grid = False
+        else:
+            self.sc.draw_grid = True
+        print('sc.draw_grid ', self.sc.draw_grid)
         self.update()
 
     def dotCoincButton(self):
