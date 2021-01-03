@@ -62,6 +62,30 @@ class StateClass():
             'dot_dist_3' : self.dotDist3,
             'line_angle_3' : self.lineAngle3,
         }
+        # Сообщения для пользователя в зависимости от текущего состояния
+        self.messages = {
+            'default' : 'Выберите действие в списке слева',
+            'point_drawing' : 'Кликните, чтобы поставить точку',
+            'line_drawing_1' : 'Кликните, чтобы указать начало отрезка',
+            'line_drawing_2' : 'Кликните, чтобы указать конец отрезка',
+            'dot_coinc_1' : 'совп. т. | Выберите первую точку',
+            'dot_coinc_2' : 'совп. т. | Выберите вторую точку',
+            'dot_dist_1' : 'расст. м. т. | Выберите первую точку',
+            'dot_dist_2' : 'расст. м. т. | Выберите вторую точку',
+            'dot_dist_3' : 'расст. м. т. | Введите расстояние:',
+            'line_paral_1' : 'парал. л. | Выберите первую линию',
+            'line_paral_2' : 'парал. л. | Выберите вторую линию',
+            'line_orth_1' : 'перп. л. | Выберите первую линию',
+            'line_orth_2' : 'перп. л. | Выберите вторую линию',
+            'line_angle_1' : 'угол м. л. | Выберите первую линию',
+            'line_angle_2' : 'угол м. л. | Выберите вторую линию',
+            'line_angle_3' : 'угол м. л. | Введите угол (в град):',
+            'line_hor' : 'верт. л | Выберите линию',
+            'line_ver' : 'гор. л | Выберите линию',
+            'point_to_line_1' : 'прин. т. к л. | Выберите точку',
+            'point_to_line_2' : 'прин. т. к л. | Выберите линию',
+            'select_constrain' : 'Выберите действие чтобы убрать подсветку огр.',
+        }
         print('StateClass constructor')
 
     def getState(self):
@@ -256,3 +280,6 @@ class StateClass():
         elif (type == 8):
             self.gc.addPointToSelected(idxs[constr_idx, 1])
             self.gc.addLineToSelected(idxs[constr_idx, 2])
+
+    def getMessage(self):
+        return self.messages[self.getState()]

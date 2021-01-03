@@ -40,7 +40,7 @@ class MyApp(QWidget):
         self.lw.move(1535, 0)
         self.lw.itemClicked.connect(lambda item: self.itemClickedList(item))
 
-        ### Текстовая полосочка
+        ### Полоска ввода
         self.qle = QLineEdit(self)
         self.qle.resize(QSize(200, 23))
         self.qle.move(self.frame_ox, 850+self.frame_oy)
@@ -49,6 +49,12 @@ class MyApp(QWidget):
         enter_btn.clicked.connect(lambda: self.enterButton())
         enter_btn.resize(btn_size)
         enter_btn.move(self.frame_ox + 200, 850+self.frame_oy)
+
+        ### Полоска вывода сообщений
+        self.qtl = QLabel(self)
+        self.qtl.resize(QSize(324, 23))
+        self.qtl.move(self.frame_ox, 820+self.frame_oy)
+        self.qtl.setText('test string')
 
         ### Кнопочки слева
         point_btn = QPushButton('Точка', self)
@@ -193,9 +199,10 @@ class MyApp(QWidget):
         #    painter.drawPoint(gc.points[gc.fp, 0], gc.points[gc.fp, 1])
         pen.setColor(QColor(0,0,0))
         painter.setPen(pen)
-
         # Выводим все ограничения в лист
         self.printConstraintsToList()
+        # Обновляем сообщение внизу
+        self.qtl.setText(self.sc.getMessage())
     ###
 
     ### Обработчики кнопочек
