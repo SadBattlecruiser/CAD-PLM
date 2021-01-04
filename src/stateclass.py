@@ -283,3 +283,7 @@ class StateClass():
 
     def getMessage(self):
         return self.messages[self.getState()]
+
+
+if __name__ == '__main__':
+    print('Не туда воюешь!')

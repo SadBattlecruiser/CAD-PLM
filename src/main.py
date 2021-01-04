@@ -12,13 +12,13 @@ from stateclass import *
 
 
 # Этот класс отвечает за обработку ивентов - нажатий кнопок, отрисовку и др.
-class MyApp(QWidget):
+class GuiClass(QWidget):
     def __init__(self):
         self.gc = GeometryClass()            # Отвечает за работу с геометрией
         self.sc = StateClass(self.gc)        # Отвечает за смену состояний программы
         super().__init__()
         self.initUI()
-        print('MyApp constructor')
+        print('GuiClass constructor')
 
     def initUI(self):
         btn_size = QSize(125, 23)
@@ -107,7 +107,7 @@ class MyApp(QWidget):
         point_to_line_btn.resize(btn_size)
         point_to_line_btn.move(0, 360)
         #
-        solve_btn = QPushButton('Рассчитать', self)
+        solve_btn = QPushButton('Перерасчитать', self)
         solve_btn.clicked.connect(lambda: self.solveButton())
         solve_btn.resize(btn_size)
         solve_btn.move(0, 400)
@@ -375,5 +375,5 @@ class MyApp(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = MyApp()
+    ex = GuiClass()
     sys.exit(app.exec_())

@@ -91,52 +91,47 @@ class GeometryClass():
     def addDotPos(self, idx, x, y):
         self.constraints_idxs = np.vstack([self.constraints_idxs , [0, idx, 0]])
         self.constraints_values = np.vstack([self.constraints_values, [x, y]])
+        self.satisfy_constraints()
 
     def addDotCoinc(self, idx1, idx2):
         self.constraints_idxs  = np.vstack([self.constraints_idxs , [1, idx1, idx2]])
         self.constraints_values = np.vstack([self.constraints_values, [0., 0.]])
+        self.satisfy_constraints()
 
     def addDotDist(self, idx1, idx2, dist):
         self.constraints_idxs  = np.vstack([self.constraints_idxs , [2, idx1, idx2]])
         self.constraints_values = np.vstack([self.constraints_values, [dist, 0.]])
+        self.satisfy_constraints()
 
     def addLineParal(self, idx1, idx2):
         self.constraints_idxs  = np.vstack([self.constraints_idxs , [3, idx1, idx2]])
         self.constraints_values = np.vstack([self.constraints_values, [0., 0.]])
+        self.satisfy_constraints()
 
     def addLineOrth(self, idx1, idx2):
         self.constraints_idxs  = np.vstack([self.constraints_idxs , [4, idx1, idx2]])
         self.constraints_values = np.vstack([self.constraints_values, [0., 0.]])
+        self.satisfy_constraints()
 
     def addLineAngle(self, idx1, idx2, angle):
         self.constraints_idxs  = np.vstack([self.constraints_idxs , [5, idx1, idx2]])
         self.constraints_values = np.vstack([self.constraints_values, [angle, 0.]])
+        self.satisfy_constraints()
 
     def addLineHor(self, idx):
         self.constraints_idxs  = np.vstack([self.constraints_idxs , [6, idx, 0]])
         self.constraints_values = np.vstack([self.constraints_values, [0., 0.]])
+        self.satisfy_constraints()
 
     def addLineVer(self, idx):
         self.constraints_idxs  = np.vstack([self.constraints_idxs , [7, idx, 0]])
         self.constraints_values = np.vstack([self.constraints_values, [0., 0.]])
+        self.satisfy_constraints()
 
     def addPointToLine(self, idx_p, idx_l):
         self.constraints_idxs  = np.vstack([self.constraints_idxs , [8, idx_p, idx_l]])
         self.constraints_values = np.vstack([self.constraints_values, [0., 0.]])
-
-    ### Для рассчета решения
-    # Для каждой точки все ограничения, в которых она участвует
-    # Причем отдельно для x и для y, т.к. на кажду т. будет по две производных
-    # def points_constraints_form(self):
-    #     pc_ll = []
-    #     for i in range(2 * self.points.shape[0]):
-    #         pc_ll.append([])
-    #     for i, constr_i in enumerate(self.constraints_idxs):
-    #         type, idx_k, idx_l = constraint_i
-    #         #val1, val2 = self.constraints_values[i]
-    #
-
-
+        self.satisfy_constraints()
 
     # Непосредственно система, корни которой ищем
     def equations_func(self, l_vec):
@@ -149,10 +144,6 @@ class GeometryClass():
         # Они равны изменениям координат + то, что приплюсуем дальше
         r_vec[: n_points*2] = l_vec[: n_points*2]
         # Дальше для каждого ограничения отдельные уравнения
-        #r_vec_cnt = 0
-
-
-
         for i, constr_i in enumerate(self.constraints_idxs):
             type, idx_k, idx_l = constr_i
             val1, val2 = self.constraints_values[i]
@@ -246,7 +237,8 @@ class GeometryClass():
         yk = self.points[idx_k, 1]
         xl = self.points[idx_l, 0]
         yl = self.points[idx_l, 1]
-        return (xk-xl+l_vec[2*idx_k]-l_vec[2*idx_l])**2 + (yk-yl+l_vec[2*idx_k+1]-l_vec[2*idx_l+1])**2 - dist**2
+        # return (xk+l_vec[2*idx_k]-xl-l_vec[2*idx_l])**2 + (yk+l_vec[2*idx_k+1]-yl-l_vec[2*idx_l+1])**2 - dist**2
+        return np.power(xk+l_vec[2*idx_k]-xl-l_vec[2*idx_l], 2) + np.power(yk+l_vec[2*idx_k+1]-yl-l_vec[2*idx_l+1], 2) - np.power(dist, 2)
 
     def Dfi2Ddxk(self, l_vec, idx_k, idx_l, dist, idx_eq):
         xk = self.points[idx_k, 0]
