@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 # Считываем данные из текстового файла
-data = pd.read_csv('input2.csv', skipinitialspace=True)
+data = pd.read_csv('input.csv', skipinitialspace=True)
 data = data.fillna(value='-')
 # Делим на позиции и переходы
 places = data[data['type'] == 0].reset_index()[['name', 'n_tokens', 'out_edges']]
