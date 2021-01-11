@@ -105,7 +105,9 @@ index_df = pd.DataFrame({
 # Проходимся по графу и проставляем достижимость
 for fr in reach_list:
     for to in reach_list[fr]:
-        index_df['reachability'].iloc[to] = 1
+        index_df.iloc[to, 2] = 1
+# Отдельно проверяем начальную точку, ибо в нее может ничего не вести
+index_df.iloc[state_to_num(state0), 2] = 1
 
 # Пишем в файл индексы
 index_df.sort_values(['reachability', 'num'], ascending=False).to_csv('out_index_reachability.csv', index=False)

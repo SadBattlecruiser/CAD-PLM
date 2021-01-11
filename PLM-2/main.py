@@ -21,15 +21,17 @@ adj_matr = np.full([data.shape[0]*2 + 2, data.shape[0]*2 + 2], -1)
 for idx, [name, duration, prev_str] in data.iterrows():
     # Работа - ребро между своим началом и концом
     adj_matr[idx*2+1, idx*2+2] = duration
-    # Если нет предыдущих, то это начало работы - вход
+    # Если нет предыдущих, то начало этой работы - вход
     if prev_str == '-':
         inputs_list.append(idx*2+1)
         adj_matr[0, idx*2+1] = 0;
     # Иначе связываем концы предыдущих работ с началом этой
     else:
-        for i_str in prev_str.split():
-            i = int(i_str)
-            adj_matr[i*2+2, idx*2+1] = 0
+        for name_prev in prev_str.split():
+            temp_df = data[data['name'] == name_prev]
+            if temp_df.size != 0:
+                idx_to = temp_df.index[0]
+                adj_matr[idx_to*2+2, idx*2+1] = 0
 
 # Проходимся по концам работ, если нет дуги - это выход
 for idx in range(1, data.shape[0]):
