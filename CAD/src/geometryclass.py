@@ -226,7 +226,13 @@ class GeometryClass():
             n_points = self.points.shape[0]
             n_constr = self.constraints_idxs.shape[0]
             r_vec0 = np.zeros(n_points*2 + n_constr)
-            r_vec = fsolve(self.equations_func, r_vec0)
+            r_vec = fsolve(self.equations_func, r_vec0, epsfcn=0.000001)
+            #r_vec = excitingmixing(self.equations_func, r_vec0)
+            #r_vec = linearmixing(self.equations_func, r_vec0)
+            #r_vec = broyden2(self.equations_func, r_vec0)
+            #r_vec = broyden1(self.equations_func, r_vec0)
+            #r_vec = anderson(self.equations_func, r_vec0)
+            #r_vec = newton_krylov(self.equations_func, r_vec0)
             delta = np.reshape(r_vec[:n_points*2], [n_points, 2])
             self.points += delta
 
